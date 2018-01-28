@@ -1,2 +1,2 @@
-# virgowise
-code to analyze wise 12um images
+# astro-tutorials
+cool things you can do with python for astronomy
