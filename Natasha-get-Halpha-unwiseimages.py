@@ -3,9 +3,9 @@
 """
 I want to download the unWISE images with the same NGC number as the Halpha images. I can do this by splitting up the radial output filenames and indexing just the nsatlas number of the galaxy,gonna need a way to convert that to the number in NED but for now: 
 
+-1/28/18 I want to somehow download the tar files from unWISE but know what galaxy is which by outputting the nsatlas numbers which is what our Halpha images are in. Also commenting details of code.
 
 
-TASH, GO BACK AND PUT ALL THESE -CS FILES INTO A SEPERATE FOLDER SO CHANGE THE DEFAULT PATH 
 """
 
 import sys
@@ -23,21 +23,22 @@ from scipy.stats import scoreatpercentile
 import tarfile
 import argparse
 import glob
+import gzip
 
 parser = argparse.ArgumentParser(description ='Download only specific unWISE images that have the same ID number as the Halpha images')
 parser.add_argument('--Halphaimagepath', dest = 'path', default = '/home/share/research/Virgo/reduced/NSAIDformatching/', help = 'full path to Halpha images')
- #ex. args.path
+ #ex. args.path; this is only for the specific directory in COMA to grab nsaid
 
 
-args = parser.parse_args()
+args = parser.parse_args() #brings in these arguments above
 
 
-search_string = args.path + '/*-CS-snapshot.png' 
+search_string = args.path + '/*-CS-snapshot.png' #allows me to index nsaid from Halpha images 
 print search_string
 input_images = glob.glob(search_string)
 nsaid=[]
 
-for f in input_images:
+for f in input_images: #this physically index's the nsaid
     t = f.split('/')
     junk = t[-1].split('-')
     nsaid.append(junk[2])
@@ -54,7 +55,7 @@ baseurl = 'http://unwise.me/cutout_fits?version=allwise'
 wisefilter1 = '3'
 #wisefilter2 = '4'
 imsize = '100' # max size = 256 pixels
-bands='34'
+bands='3'
 
 
 for id in nsaid:
@@ -66,10 +67,20 @@ for id in nsaid:
     dec = nsa.DEC[i]
     imurl = baseurl+'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(ra,dec,imsize,bands)
     #print imurl
-    wisetar = wget.download(imurl)
-    #tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
-    #wnames = tartemp.getnames()
-    #wmembers = tartemp.getmembers()
+    wisetar = wget.download(imurl)  #trying to add in nsaid
+
+    
+    tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
+    #tartemp = tartemp.add(id)
+    wnames = tartemp.getnames()
+    #wnames.append(nsaid)
+    wmembers = tartemp.getmembers()
+    wmembers = tartemp.add(id)
+    #for i in wmembers:
+    #    n = i.split('/')
+    #    trash = n[-1].split('-')
+    #    print trash
+    #wmembers.append(nsaid)
     #tartemp.extract(wmembers[0])
 
 
