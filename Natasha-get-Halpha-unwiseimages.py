@@ -68,18 +68,25 @@ for id in nsaid:
     imurl = baseurl+'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(ra,dec,imsize,bands)
     #print imurl
     wisetar = wget.download(imurl)  #trying to add in nsaid
-
+        
     
     tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
     #tartemp = tartemp.add(id)
     wnames = tartemp.getnames()
     #wnames.append(nsaid)
     wmembers = tartemp.getmembers()
-    wmembers = tartemp.add(id)
+
+    addnsaid=[]
+    
+    input_files = glob.glob(wisetar)
+    for i in input_files:
+        n = i.split('.')
+        addnsaid.append(id[3]) #I know I'm doing this part wrong, there's a tar.add but it doesn't work for our type of file no matter what mod it's in. I want to separate the file name, which the n does above, but now I want to add the string, 'id' in, which is part of this loop, before the .tar.gz.
+    print addnsaid
+    
     #for i in wmembers:
-    #    n = i.split('/')
-    #    trash = n[-1].split('-')
-    #    print trash
+    #    n = i.split('.')
+    #    print n 
     #wmembers.append(nsaid)
     #tartemp.extract(wmembers[0])
 
