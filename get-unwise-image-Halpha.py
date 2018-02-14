@@ -1,6 +1,29 @@
 #! /usr/bin/env python
 
 """
+GOAL:
+- to retrieve unWISE images of galaxies that we imaged in Halpha
+
+PROCEDURE:
+- query Halpha directory
+- get list of NSAIDs
+- read in NSA
+
+USEAGE:
+
+from within ipython on laptop
+
+ %run ~/github/virgowise/get-unwise-image-Halpha.py --nsapath '/Users/rfinn/research/NSA/'
+
+
+
+
+
+REQUIRED FILES:
+- nsa fits catalog
+
+
+NOTES:
 I want to download the unWISE images with the same NGC number as the Halpha images. I can do this by splitting up the radial output filenames and indexing just the nsatlas number of the galaxy,gonna need a way to convert that to the number in NED but for now: 
 
 -1/28/18 I want to somehow download the tar files from unWISE but know what galaxy is which by outputting the nsatlas numbers which is what our Halpha images are in. Also commenting details of code.
@@ -27,27 +50,31 @@ import gzip
 
 parser = argparse.ArgumentParser(description ='Download only specific unWISE images that have the same ID number as the Halpha images')
 parser.add_argument('--Halphaimagepath', dest = 'path', default = '/home/share/research/Virgo/reduced/NSAIDformatching/', help = 'full path to Halpha images')
+
+parser.add_argument('--nsapath', dest = 'nsapath', default = '/home/share/catalogs/', help = 'full path to Halpha images')
  #ex. args.path; this is only for the specific directory in COMA to grab nsaid
 
 
 args = parser.parse_args() #brings in these arguments above
 
 
-search_string = args.path + '/*-CS-snapshot.png' #allows me to index nsaid from Halpha images 
-print search_string
-input_images = glob.glob(search_string)
-nsaid=[]
+## search_string = args.path + '/*-CS-snapshot.png' #allows me to index nsaid from Halpha images 
+## #print search_string
+## input_images = glob.glob(search_string)
+## nsaid=[]
 
-for f in input_images: #this physically index's the nsaid
-    t = f.split('/')
-    junk = t[-1].split('-')
-    nsaid.append(junk[2])
-print nsaid
+## for f in input_images: #this physically index's the nsaid
+##     t = f.split('/')
+##     junk = t[-1].split('-')
+##     nsaid.append(junk[2])
+## print nsaid
+
+nsaid = ['119303','119230','118647','56489']
 
 #Now read in the nsa fits table to go the ra and dec
 
-datdir = '/home/share/catalogs/'
-nsatab = datdir+'nsa_v0_1_2.fits'
+
+nsatab = args.nsapath+'nsa_v0_1_2.fits'
 nsa = fits.getdata(nsatab)
 nsadict = dict((a,b) for a,b in zip(nsa.NSAID,np.arange(len(nsa.NSAID))))
 
@@ -59,9 +86,9 @@ imsize = '100' # max size = 256 pixels
 bands='3'
 
 
-for id in nsaid:
-#for j in range(1):
-    #id = nsaid[j]
+#for id in nsaid:
+for j in range(1):
+    id = nsaid[j]
     i = nsadict[int(id)]
     print i
     print 'RA= ',nsa.RA[i]
@@ -78,10 +105,13 @@ for id in nsaid:
     wnames = tartemp.getnames()
     #wnames.append(nsaid)
     wmembers = tartemp.getmembers()
-    path = '/home/share/research/Virgo/Galfit2018'
-    #wmembers = os.rename(os.path.join(path, wmembers), os.path.join(path, str(id)+wmembers))    
-    #rename = []
+    #path = '/home/share/research/Virgo/Galfit2018'
     tartemp.extractall()
+    print wmembers[0]
+    for a in wmembers:
+        os.rename(a.name, str(id)+'-'+a.name)    
+    #rename = []
+
     
     
     #for i in wmembers:
