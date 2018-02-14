@@ -51,7 +51,8 @@ nsatab = datdir+'nsa_v0_1_2.fits'
 nsa = fits.getdata(nsatab)
 nsadict = dict((a,b) for a,b in zip(nsa.NSAID,np.arange(len(nsa.NSAID))))
 
-baseurl = 'http://unwise.me/cutout_fits?version=allwise'
+#baseurl = 'http://unwise.me/cutout_fits?version=allwise'
+baseurl = 'http://unwise.me/cutout_fits?version=allwise'  
 wisefilter1 = '3'
 #wisefilter2 = '4'
 imsize = '100' # max size = 256 pixels
@@ -59,6 +60,8 @@ bands='3'
 
 
 for id in nsaid:
+#for j in range(1):
+    #id = nsaid[j]
     i = nsadict[int(id)]
     print i
     print 'RA= ',nsa.RA[i]
@@ -66,31 +69,33 @@ for id in nsaid:
     ra = nsa.RA[i]
     dec = nsa.DEC[i]
     imurl = baseurl+'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(ra,dec,imsize,bands)
-    #print imurl
+    print imurl
     wisetar = wget.download(imurl)  #trying to add in nsaid
-        
+    
     
     tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
     #tartemp = tartemp.add(id)
     wnames = tartemp.getnames()
     #wnames.append(nsaid)
     wmembers = tartemp.getmembers()
-
-    addnsaid=[]
+    path = '/home/share/research/Virgo/Galfit2018'
+    #wmembers = os.rename(os.path.join(path, wmembers), os.path.join(path, str(id)+wmembers))    
+    #rename = []
+    tartemp.extractall()
     
-    input_files = glob.glob(wisetar)
-    for i in input_files:
-        n = i.split('.')
-        addnsaid.append(id[3]) #I know I'm doing this part wrong, there's a tar.add but it doesn't work for our type of file no matter what mod it's in. I want to separate the file name, which the n does above, but now I want to add the string, 'id' in, which is part of this loop, before the .tar.gz.
-    print addnsaid
     
     #for i in wmembers:
-    #    n = i.split('.')
-    #    print n 
-    #wmembers.append(nsaid)
-    #tartemp.extract(wmembers[0])
-
-
+    #    split = i.split('-')
+        
+    
+    #os.rename(old,new) path directories though :(
+    #for i in wmembers:
+    #    if wmembers[4]:
+    #        print wmembers[4]
+    #        #tartemp.extract(wmembers[4])
+    #    if wmembers[8]:
+    #        print wmembers[8]
+    #        #tartemp.extract(wmembers[8])
     
 
 '''
@@ -147,6 +152,16 @@ tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
 
 wnames = tartemp.getnames()
 wmembers = tartemp.getmembers()
+
+   #addnsaid=[]                                                                
+
+   # input_files = glob.glob(wisetar)                                           
+   # for i in input_files:                                                      
+   #     n = i.split('.')                                                       
+  #      addnsaid.append(id[3]) #I know I'm doing this part wrong, there's a ta\
+r.add but it doesn't work for our type of file no matter what mod it's in. I wa\
+nt to separate the file name, which the n does above, but now I want to add the\
+ string, 'id' in, which is part of this loop, before the .tar.gz.
 
 tartemp.extract(wmembers[0])
 wisedat = fits.getdata(filelist[0])
