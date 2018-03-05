@@ -25,18 +25,30 @@ import gzip
 #Need user to define galaxy image/sigma/psf path later on
 parser = argparse.ArgumentParser(description ='Run galfit and store output with best fit parameters into a tar file')
 parser.add_argument('--l',dest = 'l', default =' /home/share/research/Virgo/galfitexample/WISEmodels/unwise-*p*-w3-*-m.fits', help = 'Locates list of images, sigma image, and psf image  of galaxy/galaxies path')
-parser.add_argument('--t',dest = 't', default ='~/github/Virgo/tables/', help = 'Locates fits catalog in fits tables')
+parser.add_argument('--t',dest = 't', default =' /home/astro1/github/Virgo/tables/', help = 'Locates fits catalog in fits tables')
 
 args = parser.parse_args()
 #os.sys.path.append('/Users/rfinn/github/Virgo/programs/')#Dr.Finn local path
 
 #os.sys.path.append('~/github/Virgo/programs/')
 os.sys.path.append('/home/astro1/github/Virgo/programs/')
-from rungalfit import * #This code has all the defined functions that I can use
+from rungalfit import * #This code has all the definedfunctions that I can use
+
+os.sys.path.append('/home/astro1/github/Virgo/tables/')
+from nsa.virgo.fits import *
+from nsa_wise.virgo.fits import *
+from nsa_CO-HI.virgo.fits import *
+
 #Get catalog files
 #os.system('cp ' + args.t + '/nsa.virgo.fits')
 #os.system('cp ' + args.t + '/nsa_wise.virgo')
 #os.system('cp ' + args.t + '/nsa_CO-HI.virgo.fits')
+
+
+nsa = fits.getdata(nsa.virgo.fits)
+wise = fits.getdata(nsa_wise.virgo.fits)
+HICO = fits.getdata(nsa_CO-HI.virgo.fits)
+
 
 #import catalogs from tables folder in Virgo Github
 
