@@ -34,10 +34,10 @@ args = parser.parse_args()
 os.sys.path.append('/home/astro1/github/Virgo/programs/')
 from rungalfit import * #This code has all the definedfunctions that I can use
 
-os.sys.path.append('/home/astro1/github/Virgo/tables/')
-from nsa.virgo.fits import *
-from nsa_wise.virgo.fits import *
-from nsa_CO-HI.virgo.fits import *
+#os.sys.path.append('/home/astro1/github/Virgo/tables/')
+#from nsa.virgo.fits import *
+#from nsa_wise.virgo.fits import *
+#from nsa_CO-HI.virgo.fits import *
 
 #Get catalog files
 #os.system('cp ' + args.t + '/nsa.virgo.fits')
@@ -45,9 +45,9 @@ from nsa_CO-HI.virgo.fits import *
 #os.system('cp ' + args.t + '/nsa_CO-HI.virgo.fits')
 
 
-nsa = fits.getdata(nsa.virgo.fits)
-wise = fits.getdata(nsa_wise.virgo.fits)
-co = fits.getdata(nsa_CO-HI.virgo.fits)
+#nsa = fits.getdata(nsa.virgo.fits)
+#wise = fits.getdata(nsa_wise.virgo.fits)
+#co = fits.getdata(nsa_CO-HI.virgo.fits)
 
 
 #import catalogs from tables folder in Virgo Github
