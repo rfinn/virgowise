@@ -119,10 +119,12 @@ gal1.close_input_file()
 class galaxy():
    def __init__(self,catalog_path):
        # read in nsa, wise, co catalogs
-       self.nsatab = catalog_path+'nsa.virgo.fits'
-       #self.wise
-       #self.co
+       self.nsatab = catalog_path + 'nsa.virgo.fits'
+       self.wisetab = catalog_path + 'nsa_wise.virgo.fits'
+       self.cotab = catalog_path + 'nsa_CO-HI.virgo.fits'
        self.nsa = fits.getdata(self.nsatab)
+       self.wise = fits.getdata(self.wisetab)
+       self.co = fits.getdata(self.cotab)
        self.nsadict=dict((a,b) for a,b in zip(self.nsa.NSAID,arange(len(self.nsa.NSAID))))
    def define_sample(self):
         self.sampleflag = (self.wise.W3SNR>10) & (self.co.CO_DETECT==1)
