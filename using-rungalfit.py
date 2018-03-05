@@ -47,7 +47,7 @@ from nsa_CO-HI.virgo.fits import *
 
 nsa = fits.getdata(nsa.virgo.fits)
 wise = fits.getdata(nsa_wise.virgo.fits)
-HICO = fits.getdata(nsa_CO-HI.virgo.fits)
+co = fits.getdata(nsa_CO-HI.virgo.fits)
 
 
 #import catalogs from tables folder in Virgo Github
