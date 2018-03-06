@@ -12,6 +12,7 @@
 #Natasha goal for next week: TO SET UP A PARAMETER INPUT FILE AND TRY EVENTUALLY FOR GALFIT
 import os
 import pyds9
+import numpy as np
 import argparse
 from astropy.io import fits
 import wget
@@ -125,28 +126,25 @@ class galaxy():
        self.nsa = fits.getdata(self.nsatab)
        self.wise = fits.getdata(self.wisetab)
        self.co = fits.getdata(self.cotab)
-       self.nsadict=dict((a,b) for a,b in zip(self.nsa.NSAID,arange(len(self.nsa.NSAID))))
+       self.nsadict=dict((a,b) for a,b in zip(self.nsa.NSAID,np.arange(len(self.nsa.NSAID)))) #useful for us can easily look up galaxy ID's
    def define_sample(self):
         self.sampleflag = (self.wise.W3SNR>10) & (self.co.CO_DETECT==1)
    def get_wise_image(self,nsaid):
-        self.baseurl = 'http://unwise.me/cutout_fits?version=allwise'
-        self.nsadict = dict((a,b) for a,b in zip(self.nsa.NSAID,arange(len(self.nsa.NSAID))))
-        self.RA = self.nsa.RA
-        self.DEC = self.nsa.DEC
-        self.imsize = '100'
-        self.bands = '3'
-        self.imurl = self.baseurl+'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(self.RA,self.DEC,self.imsize,self.bands)
-        self.wisetar = wget.download(self.imurl)
-        self.tartemp = tarfile.open(self.wisetar,mode='r:gz') #mode='r:gz'
-        self.wnames = self.tartemp.getnames()
-        self.wmembers = self.tartemp.getmembers()
-        self.tartemp.extractall()
-        self.split = self.wnames.split('-')
-        self.rename = self.split[2] + self.split[3] + self.split[4]
-        os.rename(self.wmembers, nsaid + '-' + self.rename) #do i need str(nsaid) or no idts
-        # download wise image
-        # adapt your code to fill out this function
-        # rename file as NSAID-W3-   get rid of RA and DEC
+        galindex = self.nsadict[nsaid]
+        baseurl = 'http://unwise.me/cutout_fits?version=allwise'
+        imsize = '100'
+        bands = '3'
+        imurl = baseurl +'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(self.nsa.RA[galindex],self.nsa.DEC[galindex],imsize,bands)
+        wisetar = wget.download(imurl)
+        tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
+        wnames = tartemp.getnames()
+        wmembers = tartemp.getmembers()
+        tartemp.extractall()
+        for filename in wnames:
+            split = filename.split('-')
+            self.rename = str(nsaid) + '-' + split[2] + '-' + split[3] + '-' + split[4]
+            os.rename(filename, self.rename)
+            
   # def get_initial_from_sextractor(self):
         # we will do this together
 
@@ -154,9 +152,8 @@ class galaxy():
     
    def set_image_names(self,nsaid):
         # fix this to match the actual filenames
-        self.galname = nsaid + '-' + self.rename
-        self.image = nsaid + '-' + self.split[2] + 'img' + self.split[4] #[2] = w3,[4] = m.fits.gz 
-        self.sigma_image = nsaid + '-' + self.split[2] + 'std' + self.split[4]
+        self.image = self.rename[0] 
+        self.sigma_image = self.rename[3]
         self.psf_image = 'wise-w3-psf-wpro-09x09-05x05.fits' #just using center til, doesn't matter usually
         self.psf_oversampling = 80
         #mask_image = 'testimage_mask.fits' no mask image 
@@ -166,8 +163,7 @@ class galaxy():
         self.ymaxfit=100
         self.convolution_size=100
         self.magzp=22.5 #For WISE
-        self.pscale_dx=0.344 #Natasha changed from pscale to splitting between dx and dy is this okay
-        self.pscale_dy=0.344
+        self.pscale=0.344 #For WISE
         #convflag=1 # apply psf convolution
         #constraintflag=1 # add a constraint file?
         #self.fitallflag=0
@@ -181,9 +177,14 @@ class galaxy():
         self.Re = 0.5
         self.BA = .4
         self.PA = 0
+
         
-   def initialize_galfit(self):
-        self.gal1 = galfit(galname=self.galname,image=self.image,sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,mask_image=self.mask_image,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,convflag=self.convflag,constraintflag=self.constraintflag,fitallflag=self.fitallflag,ncomp=self.ncomp)
+   def initialize_galfit(self,nsaid):
+        self.gal1 = galfit(galname=nsaid,image=self.image,sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale)
+        #i took out mask image = self.mask image
+        #constraintflag=constraintflag
+        #fitallflag=fitallflag
+        #convflag=convflag
    def run_galfit(self):
 
         self.gal1.create_output_names()
@@ -199,12 +200,13 @@ class galaxy():
 if __name__ == "__main__":
         
     mygals = galaxy(args.t)
-    mygals.define_sample(mygals.nsa.NSAID[galaxy_index[0]])
-    mygals.get_wise_image(mygals.nsa.NSAID[galaxy_index[0]])
-    #mygals.set_image_names()
-    #mygals.set_sersic_params()
-    #mygals.initialize_galfit()
-    #mygals.run_galfit()
+    mynsaid = 118647
+    mygals.define_sample()
+    mygals.get_wise_image(mynsaid)
+    mygals.set_image_names(mynsaid)
+    mygals.set_sersic_params()
+    mygals.initialize_galfit(mynsaid)
+    mygals.run_galfit()
     
     #galaxy_index = np.arange(len(self.nsa.RA))[mygals.sampleflag]
     #mygals.get_wise_image(mygals.nsa.NSAID[galaxy_index[0]])
