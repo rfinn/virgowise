@@ -53,23 +53,24 @@ parser.add_argument('--Halphaimagepath', dest = 'path', default = '/home/share/r
 
 parser.add_argument('--nsapath', dest = 'nsapath', default = '/home/share/catalogs/', help = 'full path to Halpha images')
  #ex. args.path; this is only for the specific directory in COMA to grab nsaid
-
+parser.add_argument('--nsaid', dest = 'nsaid', default = '156774', help = 'Enter in nsaid')
 
 args = parser.parse_args() #brings in these arguments above
 
 
-## search_string = args.path + '/*-CS-snapshot.png' #allows me to index nsaid from Halpha images 
-## #print search_string
-## input_images = glob.glob(search_string)
-## nsaid=[]
+#search_string = args.path + '/*-CS-snapshot.png' #allows me to index nsaid from Halpha images 
+#print search_string
+#input_images = glob.glob(search_string)
+#nsaid=[]
 
-## for f in input_images: #this physically index's the nsaid
-##     t = f.split('/')
-##     junk = t[-1].split('-')
-##     nsaid.append(junk[2])
-## print nsaid
+#for f in input_images: #this physically index's the nsaid
+#    t = f.split('/')
+#    junk = t[-1].split('-')
+#    nsaid.append(junk[2])
+#    print nsaid
 
-nsaid = ['119303','119230','118647','56489']
+#nsaid = ['56462','67595','164358','54578','61690','61692']
+nsaid = args.nsaid
 
 #Now read in the nsa fits table to go the ra and dec
 
@@ -86,9 +87,9 @@ imsize = '100' # max size = 256 pixels
 bands='3'
 
 
-#for id in nsaid:
-for j in range(1):
-    id = nsaid[j]
+for id in nsaid:
+#for j in range(1):
+    #id = nsaid[j]
     i = nsadict[int(id)]
     print i
     print 'RA= ',nsa.RA[i]
@@ -107,16 +108,16 @@ for j in range(1):
     wmembers = tartemp.getmembers()
     #path = '/home/share/research/Virgo/Galfit2018'
     tartemp.extractall()
-    print wmembers[0]
     for a in wmembers:
         os.rename(a.name, str(id)+'-'+a.name)    
+
     #rename = []
 
     
     
-    #for i in wmembers:
-    #    split = i.split('-')
-        
+    for i in wnames:
+        split = i.split('-')
+        print split
     
     #os.rename(old,new) path directories though :(
     #for i in wmembers:
