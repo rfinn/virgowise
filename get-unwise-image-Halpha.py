@@ -70,7 +70,9 @@ args = parser.parse_args() #brings in these arguments above
 #    print nsaid
 
 #nsaid = ['56462','67595','164358','54578','61690','61692']
-nsaid = args.nsaid
+nsaid = ['156774']
+#print nsaid
+#print str(nsaid)
 
 #Now read in the nsa fits table to go the ra and dec
 
