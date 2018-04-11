@@ -32,7 +32,7 @@ args = parser.parse_args()
 #os.sys.path.append('/Users/rfinn/github/Virgo/programs/')#Dr.Finn local path
 
 #os.sys.path.append('~/github/Virgo/programs/')
-os.sys.path.append('/home/astro1/github/Virgo/programs/')
+os.sys.path.append('~/github/virgowise/')
 from rungalfit import * #This code has all the definedfunctions that I can use
 
 #os.sys.path.append('/home/astro1/github/Virgo/tables/')
@@ -128,7 +128,9 @@ class galaxy():
        self.co = fits.getdata(self.cotab)
        self.nsadict=dict((a,b) for a,b in zip(self.nsa.NSAID,np.arange(len(self.nsa.NSAID)))) #useful for us can easily look up galaxy ID's
    def define_sample(self):
-        self.sampleflag = (self.wise.W3SNR>10) & (self.co.CO_DETECT==1)
+       #self.sampleflag = (self.wise.W3SNR>10) & (self.co.CO_DETECT==1)   
+       self.sampleflag1 = self.wise.W3SNR>10
+       self.sampleflag2 = self.co.CO_DETECT ==1
    def get_wise_image(self,nsaid):
         galindex = self.nsadict[nsaid]
         baseurl = 'http://unwise.me/cutout_fits?version=allwise'
@@ -167,7 +169,7 @@ class galaxy():
         #convflag=1 # apply psf convolution
         #constraintflag=1 # add a constraint file?
         #self.fitallflag=0
-        #self.ncomp=1
+        self.ncomp=1
    def set_sersic_params(self):
         # define first guess sersic parameters for galaxy 
         self.xc=50
@@ -180,7 +182,8 @@ class galaxy():
 
         
    def initialize_galfit(self,nsaid):
-        self.gal1 = galfit(galname=nsaid,image=self.image,sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale)
+        self.gal1 = galfit(galname=nsaid,image=self.image,sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp)
+                           #mask_image=self.mask_image,constraintflag=self.constraintflag,fitallflag=self.fitallflag,convflag=self.convflag)
         #i took out mask image = self.mask image
         #constraintflag=constraintflag
         #fitallflag=fitallflag
@@ -190,10 +193,17 @@ class galaxy():
         self.gal1.create_output_names()
         self.gal1.open_galfit_input()
         self.gal1.write_image_params()
-        self.gal1.add_simple_sersic_object(1,'sersic',xc,yc,mag,Re,nsersic,BA,PA)
+        self.gal1.set_sersic_params(xobj=None,yobj=None,mag=None,rad=None,nsersic=None,BA=None,PA=None,fitmag=1,fitcenter=1,fitrad=1,fitBA=1,fitPA=1,fitn=1,first_time=0)
+        self.gal1.reset_sersic_params()
+        self.gal1.add_simple_sersic_object(1,'sersic',50,50,7,0.5,2,0.4,90)
         self.gal1.set_sky(0)
+        self.gal1.write_sersic(1,'sersic')
         self.gal1.write_sky(2)
+        self.gal1.run_galfit()
+        self.gal1.display_results()
         self.gal1.close_input_file()
+        self.gal1.print_params()
+        self.gal1.print_galfit_results()
 
 
 ############ MAIN PROGRAM ###############
