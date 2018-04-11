@@ -26,7 +26,7 @@ import gzip
 #Need user to define galaxy image/sigma/psf path later on
 parser = argparse.ArgumentParser(description ='Run galfit and store output with best fit parameters into a tar file')
 parser.add_argument('--l',dest = 'l', default =' /home/share/research/Virgo/galfitexample/WISEmodels/unwise-*p*-w3-*-m.fits', help = 'Locates list of images, sigma image, and psf image  of galaxy/galaxies path')
-parser.add_argument('--t',dest = 't', default ='~/github/Virgo/tables/', help = 'Locates fits catalog in fits tables')
+parser.add_argument('--t',dest = 't', default ='~/github/Virgo/tables/', help = 'Location of NSA tables fits')
 
 args = parser.parse_args()
 #os.sys.path.append('/Users/rfinn/github/Virgo/programs/')#Dr.Finn local path
