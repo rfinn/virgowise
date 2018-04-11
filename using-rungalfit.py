@@ -140,13 +140,22 @@ class galaxy():
         wisetar = wget.download(imurl)
         tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
         wnames = tartemp.getnames()
+        print wnames
         wmembers = tartemp.getmembers()
         tartemp.extractall()
-        for filename in wnames:
-            split = filename.split('-')
-            self.rename = str(nsaid) + '-' + split[2] + '-' + split[3] + '-' + split[4]
-            os.rename(filename, self.rename)
-            
+        for fname in wnames:
+
+
+           split = fname.split('-')
+           
+           self.rename = str(nsaid) + '-' + split[2] + '-' + split[3] + '-' + split[4]
+           print self.rename
+           os.rename(fname, self.rename)
+           if self.rename.find('.gz') > -1:
+              os.system('gunzip '+self.rename)
+           if fname.find('img') > -1:
+              self.inputimage = self.rename
+              #os.system runs this like a linux command
   # def get_initial_from_sextractor(self):
         # we will do this together
 
@@ -154,7 +163,7 @@ class galaxy():
     
    def set_image_names(self,nsaid):
         # fix this to match the actual filenames
-        self.image = self.rename[0] 
+        self.image = self.inputimage 
         self.sigma_image = self.rename[3]
         self.psf_image = 'wise-w3-psf-wpro-09x09-05x05.fits' #just using center til, doesn't matter usually
         self.psf_oversampling = 80
@@ -182,33 +191,33 @@ class galaxy():
 
         
    def initialize_galfit(self,nsaid):
-        self.gal1 = galfit(galname=nsaid,image=self.image,sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp)
+        self.gal1 = galfit(galname='NSA'+str(nsaid),image=self.image,sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp)
                            #mask_image=self.mask_image,constraintflag=self.constraintflag,fitallflag=self.fitallflag,convflag=self.convflag)
         #i took out mask image = self.mask image
         #constraintflag=constraintflag
         #fitallflag=fitallflag
         #convflag=convflag
-   def run_galfit(self):
+   def run_galfit_wise(self):
 
-        self.gal1.create_output_names()
-        self.gal1.open_galfit_input()
-        self.gal1.write_image_params()
-        self.gal1.set_sersic_params(xobj=None,yobj=None,mag=None,rad=None,nsersic=None,BA=None,PA=None,fitmag=1,fitcenter=1,fitrad=1,fitBA=1,fitPA=1,fitn=1,first_time=0)
-        self.gal1.reset_sersic_params()
-        self.gal1.add_simple_sersic_object(1,'sersic',50,50,7,0.5,2,0.4,90)
+        #self.gal1.create_output_names()
+        #self.gal1.open_galfit_input()
+        #self.gal1.write_image_params()
+        self.gal1.set_sersic_params(xobj=self.xc,yobj=self.yc,mag=self.mag,rad=self.Re,nsersic=self.nsersic,BA=self.BA,PA=self.PA,fitmag=1,fitcenter=1,fitrad=1,fitBA=1,fitPA=1,fitn=1,first_time=0)
+        #self.gal1.reset_sersic_params()
+        #self.gal1.add_simple_sersic_object(1,'sersic',self.xc,self.yc,self.mag,self.Re,self.nsersic,self.BA,self.PA)
         self.gal1.set_sky(0)
-        self.gal1.write_sersic(1,'sersic')
-        self.gal1.write_sky(2)
+        #self.gal1.write_sersic(1,'sersic')
+        #self.gal1.write_sky(2)
         self.gal1.run_galfit()
-        self.gal1.display_results()
-        self.gal1.close_input_file()
-        self.gal1.print_params()
-        self.gal1.print_galfit_results()
+        #self.gal1.display_results()
+        #self.gal1.close_input_file()
+        #self.gal1.print_params()
+        #self.gal1.print_galfit_results()
 
 
 ############ MAIN PROGRAM ###############
 if __name__ == "__main__":
-        
+#g and then nsaid above with NSA + str(nsaid)        
     mygals = galaxy(args.t)
     mynsaid = 118647
     mygals.define_sample()
@@ -216,7 +225,7 @@ if __name__ == "__main__":
     mygals.set_image_names(mynsaid)
     mygals.set_sersic_params()
     mygals.initialize_galfit(mynsaid)
-    mygals.run_galfit()
+    mygals.run_galfit_wise()
     
     #galaxy_index = np.arange(len(self.nsa.RA))[mygals.sampleflag]
     #mygals.get_wise_image(mygals.nsa.NSAID[galaxy_index[0]])
