@@ -23,7 +23,7 @@ def parse_galfit_1comp(galfit_outimage,asymflag=0,ncomp=1):
         header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_SKY','CHI2NU']
     fit_parameters=[]
     working_dir=os.getcwd()+'/'
-    image_header = fits.getheader(galfit_outimage)
+    image_header = fits.getheader(galfit_outimage,2)
     for hkey in header_keywords:
         s=image_header[hkey]
         #print hkey,t
