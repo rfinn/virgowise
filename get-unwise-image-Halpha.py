@@ -53,7 +53,7 @@ parser.add_argument('--Halphaimagepath', dest = 'path', default = '/home/share/r
 
 parser.add_argument('--nsapath', dest = 'nsapath', default = '/home/share/catalogs/', help = 'full path to Halpha images')
  #ex. args.path; this is only for the specific directory in COMA to grab nsaid
-parser.add_argument('--nsaid', dest = 'nsaid', default = '156774', help = 'Enter in nsaid')
+#parser.add_argument('--nsaid', dest = 'nsaid', default = '156774', help = 'Enter in nsaid')
 
 args = parser.parse_args() #brings in these arguments above
 
@@ -70,7 +70,7 @@ args = parser.parse_args() #brings in these arguments above
 #    print nsaid
 
 #nsaid = ['56462','67595','164358','54578','61690','61692']
-nsaid = ['156774']
+nsaid = ['143986']
 #print nsaid
 #print str(nsaid)
 
@@ -83,10 +83,10 @@ nsadict = dict((a,b) for a,b in zip(nsa.NSAID,np.arange(len(nsa.NSAID))))
 
 #baseurl = 'http://unwise.me/cutout_fits?version=allwise'
 baseurl = 'http://unwise.me/cutout_fits?version=allwise'  
-wisefilter1 = '3'
-#wisefilter2 = '4'
+#wisefilter1 = '3'
+wisefilter2 = '4'
 imsize = '100' # max size = 256 pixels
-bands='3'
+bands='4'
 
 
 for id in nsaid:
