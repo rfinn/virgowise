@@ -12,6 +12,69 @@ pyds9
 import pyds9
 import os
 
+def parse_galfit_1comp(galfit_outimage,asymflag=0,ncomp=1):
+    numerical_error_flag=0
+    if asymflag:
+        header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','1_F1','1_F1PA','CHI2NU']
+    else:
+        header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','CHI2NU']
+    if ncomp == 2:
+        header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_SKY','CHI2NU']
+    fit_parameters=[]
+    working_dir=os.getcwd()+'/'
+    for hkey in header_keywords:
+        iraf.imgets(image=galfit_outimage,param=hkey)
+        s=iraf.imgets.value
+        #print hkey,t
+        if s.find('[') > -1:
+            s=s.replace('[','')
+            s=s.replace(']','')
+            t=s.split('+/-')
+            values=(float(t[0]),0.)# fit and error
+        else:
+            t=s.split('+/-')
+            try:
+                values=(float(t[0]),float(t[1]))# fit and error
+            except ValueError:
+                # look for * in the string, which indicates numerical problem
+                if t[0].find('*') > -1:
+                    numerical_error_flag=1
+                    t[0]=t[0].replace('*','')
+                    t[1]=t[1].replace('*','')
+                    values=(float(t[0]),float(t[1]))# fit and error
+            except IndexError: # for CHI2NU
+                chi2nu=float(t[0])
+                continue
+        fit_parameters.append(values)
+    #iraf.imgets(image=galfit_outimage,param='1_YC')
+    #t=iraf.imgets.value.split('+/-')
+    #y_fit=(float(t[0]),float(t[1]))# fit and error
+    #iraf.imgets(image=galfit_outimage,param='1_MAG')
+    #t=iraf.imgets.value.split('+/-')
+    #mag_fit=(float(t[0]),float(t[1]))# fit and error
+    #iraf.imgets(image=galfit_outimage,param='1_RE')
+    #t=iraf.imgets.value.split('+/-')
+    #Re_fit=(float(t[0]),float(t[1]))# fit and error
+    #iraf.imgets(image=galfit_outimage,param='1_N')
+    #t=iraf.imgets.value.split('+/-')
+    #Nsersic_fit=(float(t[0]),float(t[1]))# fit and error
+    #iraf.imgets(image=galfit_outimage,param='1_AR')
+    #t=iraf.imgets.value.split('+/-')
+    #axis_ratio_fit=(float(t[0]),float(t[1]))# fit and error
+    #iraf.imgets(image=galfit_outimage,param='1_PA')
+    #t=iraf.imgets.value.split('+/-')
+    #pa_fit=(float(t[0]),float(t[1]))# fit and error
+    ## get best-fit sky values
+    #iraf.imgets(image=galfit_outimage,param='2_SKY')
+    #t=iraf.imgets.value.split('+/-')
+    #sky_fit=(float(t[0]),float(t[1]))# fit and error
+
+    #return x_fit,y_fit,mag_fit,Re_fit,Nsersic_fit,axis_ratio_fit,pa_fit,sky_fit
+    fit_parameters.append(numerical_error_flag)
+    fit_parameters.append(chi2nu)
+    #print len(fit_parameters),fit_parameters
+    return fit_parameters
+
 
 class galfit:
     def __init__(self,galname=None,image=None,sigma_image=None,psf_image=None,psf_oversampling=None,mask_image=None,xminfit=None,yminfit=None,xmaxfit=None,ymaxfit=None,convolution_size=None,magzp=None,pscale=None,convflag=1,constraintflag=1,fitallflag=0,ncomp=1):
