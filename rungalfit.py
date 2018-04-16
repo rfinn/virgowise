@@ -11,6 +11,7 @@ pyds9
 
 import pyds9
 import os
+from astropy import fits
 
 def parse_galfit_1comp(galfit_outimage,asymflag=0,ncomp=1):
     numerical_error_flag=0
