@@ -285,7 +285,8 @@ class galfit:
         d.set('frame match wcs')
 
         galfit_outimage=self.galname+'-'+'1Comp-galfit-out.fits[2]'
-        self.print_galfit_results(galfit_outimage)
+        galfit_outimage_header=self.galname+'-'+'1Comp-galfit-out.fits'
+        self.print_galfit_results(galfit_outimage_header)
         print 'file to display = ',subcomp_image
         s='file new multiframe '+subcomp_image
         d.set(s)
