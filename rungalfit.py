@@ -26,7 +26,7 @@ def parse_galfit_1comp(galfit_outimage,asymflag=0,ncomp=1):
     image_header = fits.getheader(galfit_outimage,2)
     for hkey in header_keywords:
         s=image_header[hkey]
-        #print hkey,t
+        print hkey
         if s.find('[') > -1:
             s=s.replace('[','')
             s=s.replace(']','')
