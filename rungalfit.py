@@ -22,9 +22,9 @@ def parse_galfit_1comp(galfit_outimage,asymflag=0,ncomp=1):
         header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_SKY','CHI2NU']
     fit_parameters=[]
     working_dir=os.getcwd()+'/'
+    image_header = fits.getheader(galfit_outimage)
     for hkey in header_keywords:
-        iraf.imgets(image=galfit_outimage,param=hkey)
-        s=iraf.imgets.value
+        s=image_header[hkey]
         #print hkey,t
         if s.find('[') > -1:
             s=s.replace('[','')
@@ -46,33 +46,8 @@ def parse_galfit_1comp(galfit_outimage,asymflag=0,ncomp=1):
                 chi2nu=float(t[0])
                 continue
         fit_parameters.append(values)
-    #iraf.imgets(image=galfit_outimage,param='1_YC')
-    #t=iraf.imgets.value.split('+/-')
-    #y_fit=(float(t[0]),float(t[1]))# fit and error
-    #iraf.imgets(image=galfit_outimage,param='1_MAG')
-    #t=iraf.imgets.value.split('+/-')
-    #mag_fit=(float(t[0]),float(t[1]))# fit and error
-    #iraf.imgets(image=galfit_outimage,param='1_RE')
-    #t=iraf.imgets.value.split('+/-')
-    #Re_fit=(float(t[0]),float(t[1]))# fit and error
-    #iraf.imgets(image=galfit_outimage,param='1_N')
-    #t=iraf.imgets.value.split('+/-')
-    #Nsersic_fit=(float(t[0]),float(t[1]))# fit and error
-    #iraf.imgets(image=galfit_outimage,param='1_AR')
-    #t=iraf.imgets.value.split('+/-')
-    #axis_ratio_fit=(float(t[0]),float(t[1]))# fit and error
-    #iraf.imgets(image=galfit_outimage,param='1_PA')
-    #t=iraf.imgets.value.split('+/-')
-    #pa_fit=(float(t[0]),float(t[1]))# fit and error
-    ## get best-fit sky values
-    #iraf.imgets(image=galfit_outimage,param='2_SKY')
-    #t=iraf.imgets.value.split('+/-')
-    #sky_fit=(float(t[0]),float(t[1]))# fit and error
-
-    #return x_fit,y_fit,mag_fit,Re_fit,Nsersic_fit,axis_ratio_fit,pa_fit,sky_fit
     fit_parameters.append(numerical_error_flag)
     fit_parameters.append(chi2nu)
-    #print len(fit_parameters),fit_parameters
     return fit_parameters
 
 
