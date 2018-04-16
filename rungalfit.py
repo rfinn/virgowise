@@ -312,7 +312,10 @@ class galfit:
         except:
             print "couldn't delete frame 6"
         d.set('frame 7')
-        d.set('file '+self.mask_image)
+        if self.mask_image == NoneType:
+            print 'no mask available'
+        else:
+            d.set('file '+self.mask_image)
 
         for k in range(2,endframe):
             if k == 5:
