@@ -148,7 +148,7 @@ class galaxy():
 
            split = fname.split('-')
            
-           self.rename = str(nsaid) + '-' + split[2] + '-' + split[3] + '-' + split[4]
+           self.rename = 'NSA' + str(nsaid) + '-' + split[2] + '-' + split[3] + '-' + split[4]
            print self.rename
            os.rename(fname, self.rename)
            if self.rename.find('.gz') > -1:
