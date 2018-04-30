@@ -19,7 +19,7 @@
 
 
 from astropy.io import fits
-import argsparse
+import argparse
 
 from virgowise.common import *
 import rungalfit
