@@ -47,6 +47,9 @@ args = parser.parse_args()
 
 # read in nsa catalog
 
+print 'this is what I think the NSA table filename is'
+print args.catalogpath+'nsa.virgo.fits'
+
 nsa = fits.getdata(args.catalogpath+'nsa.virgo.fits')
 nsadict=dict((a,b) for a,b in zip(nsa.NSAID,np.arange(len(nsa.NSAID))))
 
