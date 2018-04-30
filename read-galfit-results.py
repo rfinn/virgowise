@@ -21,9 +21,12 @@
 from astropy.io import fits
 import argparse
 
-from virgowise.common import *
+#from virgowise.common import *
 import rungalfit
 
+ngc_filament_ids = [56403,56409,56410,56411,56434,56455,56456,56462,56469,56482,56489,61690,61691,61692,67593,88353,90371,93403,94217,104307,104439,118647,119230,119289,119303,120018,120053,142509,143682,143686,143827,143951,143986,162674,163136,163783,164224,164358]
+
+unwisepixelscale = 2.75 #arcsec/pixel, unWISE
 # list of NGC filament galaxies (starting with those with Halpha)
 
 def print_galfit_results(parse_output):            
