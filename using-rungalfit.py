@@ -135,7 +135,8 @@ class galaxy():
         galindex = self.nsadict[nsaid]
         baseurl = 'http://unwise.me/cutout_fits?version=allwise'
         imsize = '100'
-        bands = '3'
+        #bands = '3'
+        bands = '4'
         imurl = baseurl +'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(self.nsa.RA[galindex],self.nsa.DEC[galindex],imsize,bands)
         wisetar = wget.download(imurl)
         tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
@@ -149,6 +150,7 @@ class galaxy():
            split = fname.split('-')
            
            self.rename = 'NSA' + str(nsaid) + '-' + split[2] + '-' + split[3] + '-' + split[4]
+
            print self.rename
            os.rename(fname, self.rename)
            if self.rename.find('.gz') > -1:
@@ -189,7 +191,7 @@ class galaxy():
         self.BA = .4
         self.PA = 0
 
-        
+        #rename output files from rungalfit like 1Comp-fit.log to be 1Comp-w3-.. and for w4 too
    def initialize_galfit(self,nsaid):
         self.gal1 = galfit(galname='NSA'+str(nsaid),image=self.image,sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp)
                            #mask_image=self.mask_image,constraintflag=self.constraintflag,fitallflag=self.fitallflag,convflag=self.convflag)
@@ -218,14 +220,16 @@ class galaxy():
 ############ MAIN PROGRAM ###############
 if __name__ == "__main__":
 #g and then nsaid above with NSA + str(nsaid)        
-    mygals = galaxy(args.t)
-    mynsaid = 118647
-    mygals.define_sample()
-    mygals.get_wise_image(mynsaid)
-    mygals.set_image_names(mynsaid)
-    mygals.set_sersic_params()
-    mygals.initialize_galfit(mynsaid)
-    mygals.run_galfit_wise()
+    listname = [56403,56409,56410,56411,56434,56455,56456,56462,56469,56482,56489,61690,61691,61692,67593,88353,90371,93403,94217,104307,104439,118647,119230,119289,119303,120018,120053,142509,143682,143686,143827,143951,143986,162674,163136,163783,164224,164358]
+
+    for mynsaid in listname:
+        mygals = galaxy(args.t)
+        mygals.define_sample()
+        mygals.get_wise_image(mynsaid)
+        mygals.set_image_names(mynsaid)
+        mygals.set_sersic_params()
+        mygals.initialize_galfit(mynsaid)
+        mygals.run_galfit_wise()
     
     #galaxy_index = np.arange(len(self.nsa.RA))[mygals.sampleflag]
     #mygals.get_wise_image(mygals.nsa.NSAID[galaxy_index[0]])
