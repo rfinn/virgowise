@@ -20,7 +20,7 @@
 
 from astropy.io import fits
 import argparse
-
+import numpy as np
 #from virgowise.common import *
 import rungalfit
 
@@ -48,7 +48,7 @@ args = parser.parse_args()
 # read in nsa catalog
 
 nsa = fits.getdata(args.catalogpath+'nsa.virgo.fits')
-nsadict=dict((a,b) for a,b in zip(nsa.NSAID,arange(len(nsa.NSAID))))
+nsadict=dict((a,b) for a,b in zip(nsa.NSAID,np.arange(len(nsa.NSAID))))
 
 
 
