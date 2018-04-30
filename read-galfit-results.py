@@ -82,8 +82,8 @@ class galaxy:
 
 if __name__ == "__main__":
 
-    for nsa in ngc_filament_ids:
-        g = galaxy(nsa)
+    for nsaid in ngc_filament_ids:
+        g = galaxy(nsaid)
         g.get_galfit_results()
         g.calc_sizeratio()
 
