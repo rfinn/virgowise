@@ -64,11 +64,12 @@ class galaxy:
     def __init__(self, nsaid):
         self.nsaid = nsaid
         self.nsaindex = nsadict[int(nsaid)]
-    def get_galfit_results(self):
+    def get_galfit_results(self,printflag = False):
         filename = 'NSA'+str(self.nsaid)+'-1Comp-galfit-out.fits' # extension 2 is the model
 
         t = rungalfit.parse_galfit_1comp(filename)
-        print_galfit_results(t)
+        if printflag:
+            print_galfit_results(t)
         
         header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','ERROR','CHI2NU']
         self.xc, self.xc_err = t[0]
