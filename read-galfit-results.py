@@ -55,7 +55,7 @@ nsadict=dict((a,b) for a,b in zip(nsa.NSAID,np.arange(len(nsa.NSAID))))
 class galaxy:
     def __init__(self, nsaid):
         self.nsaid = nsaid
-        self.nsaindex = nsadict(int(nsaid))
+        self.nsaindex = nsadict[int(nsaid))]
     def get_galfit_results(self):
         filename = 'NSA'+str(nsaid)+'-1Comp-galfit-out.fits' # extension 2 is the model
 
