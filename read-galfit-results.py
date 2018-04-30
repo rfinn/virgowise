@@ -47,11 +47,6 @@ args = parser.parse_args()
 nsa = fits.getdata(args.catalogpath+'nsa_v0_1_2.fits')
 nsadict=dict((a,b) for a,b in zip(nsa.NSAID,arange(len(nsa.NSAID))))
 
-for nsa in ngc_filament_ids:
-    filename = 'NSA'+str(nsaid)+'-1Comp-galfit-out.fits' # extension 2 is the model
-
-    t = rungalfit.parse_galfit_1comp(filename)
-    print_galfit_results(t)
 
 
 class galaxy:
@@ -77,5 +72,12 @@ class galaxy:
         self.chi2nu = t[9]
     def calc_sizeratio(self):
         self.sizeratio = self.re*unwisepixelscale/nsa.SERSIC_TH50[self.nsaindex]
+        print 'R12/Re = %.2f'%(self.sizeratio)
 
+if __name__ == "__main__":
+
+    for nsa in ngc_filament_ids:
+        g = galaxy(nsa)
+        g.get_galfit_results()
+        g.calc_sizeratio()
 
