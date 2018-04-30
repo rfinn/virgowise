@@ -37,14 +37,14 @@ def print_galfit_results(parse_output):
 
 
 parser = argparse.ArgumentParser(description ='get galfit results for a sample of NGC galaxies')
-parser.add_argument('--catalogpath', dest = 'catalogpath', default = '/Users/rfinn/Research/NSA', help = 'path to NSA catalog (nsa_v0_1_2.fits)')
+parser.add_argument('--catalogpath', dest = 'catalogpath', default = '~/github/Virgo/tables/', help = 'path to NSA catalog (nsa.virgo.fits)')
 
 args = parser.parse_args()
 
 
 # read in nsa catalog
 
-nsa = fits.getdata(args.catalogpath+'nsa_v0_1_2.fits')
+nsa = fits.getdata(args.catalogpath+'nsa.virgo.fits')
 nsadict=dict((a,b) for a,b in zip(nsa.NSAID,arange(len(nsa.NSAID))))
 
 
