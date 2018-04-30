@@ -57,7 +57,7 @@ class galaxy:
         self.nsaid = nsaid
         self.nsaindex = nsadict[int(nsaid)]
     def get_galfit_results(self):
-        filename = 'NSA'+str(nsaid)+'-1Comp-galfit-out.fits' # extension 2 is the model
+        filename = 'NSA'+str(self.nsaid)+'-1Comp-galfit-out.fits' # extension 2 is the model
 
         t = rungalfit.parse_galfit_1comp(filename)
         print_galfit_results(t)
