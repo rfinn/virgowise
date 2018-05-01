@@ -93,7 +93,10 @@ def plotresults():
     plt.xlabel('$R_{12} \ (pixels)$',fontsize=18)
     plt.ylabel('$R_{22} \ (pixels)$',fontsize=18)
     plt.title('Comparison of 12 and 22um Re from GALFIT')
-    plt.axis([0,50,0,50])
+    plt.gca().set_yscale('log')
+    plt.gca().set_xscale('log')
+    
+    plt.axis([.2,80,.2,80])
     plt.savefig('r12_vs_r22.png')
 
 # read in nsa catalog
