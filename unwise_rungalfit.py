@@ -39,13 +39,13 @@ import gzip
 #Need user to define galaxy image/sigma/psf path later on
 parser = argparse.ArgumentParser(description ='Run galfit and store output with best fit parameters into a tar file')
 parser.add_argument('--band', dest = 'band', default = '3', help = 'unWISE image band to download: 3=12um, 4=22um (can only do one at a time for now.')
-parser.add_argument('--nsapath',dest = 'nsapath', default ='~/github/Virgo/tables/', help = 'Location of NSA tables fits')
+parser.add_argument('--nsapath',dest = 'nsapath', default ='/Users/rfinn/github/Virgo/tables/', help = 'Location of NSA tables fits')
 parser.add_argument('--display',dest = 'display', default =True, help = 'display galfit results in ds9?  default = True')
 
 args = parser.parse_args()
 
 #os.sys.path.append('~/github/Virgo/programs/')
-os.sys.path.append('~/github/virgowise/')
+os.sys.path.append('/Users/rfinn/github/virgowise/')
 from rungalfit import * #This code has all the defined functions that I can use
 
 
