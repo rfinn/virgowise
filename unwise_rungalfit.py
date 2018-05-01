@@ -40,6 +40,7 @@ import gzip
 parser = argparse.ArgumentParser(description ='Run galfit and store output with best fit parameters into a tar file')
 parser.add_argument('--band', dest = 'band', default = '3', help = 'unWISE image band to download: 3=12um, 4=22um (can only do one at a time for now.')
 parser.add_argument('--nsapath',dest = 'nsapath', default ='~/github/Virgo/tables/', help = 'Location of NSA tables fits')
+parser.add_argument('--display',dest = 'display', default =True, help = 'display galfit results in ds9?  default = True')
 
 args = parser.parse_args()
 
@@ -54,16 +55,20 @@ class catalogs():
        # read in nsa, wise, co catalogs
        self.nsatab = catalog_path + 'nsa.virgo.fits'
        self.wisetab = catalog_path + 'nsa_wise.virgo.fits'
-       self.cotab = catalog_path + 'nsa_CO-HI.virgo.fits'
+       self.cotab = catalog_path + 'nsa_CO-Gianluca.virgo.fits'
        self.nsa = fits.getdata(self.nsatab)
        self.wise = fits.getdata(self.wisetab)
        self.co = fits.getdata(self.cotab)
        self.nsadict=dict((a,b) for a,b in zip(self.nsa.NSAID,np.arange(len(self.nsa.NSAID)))) #useful for us can easily look up galaxy ID's       
    def define_sample(self):
        #self.sampleflag = (self.wise.W3SNR>10) & (self.co.CO_DETECT==1)   
-       self.sampleflag1 = self.wise.W3SNR>10
-       self.sampleflag2 = self.co.CO_DETECT ==1
+       self.w3_flag = self.wise.W3SNR>10 
+       self.w4_flag = self.wise.W4SNR>5      
+       self.co_flag = self.co.COdetected == '1'
+       self.sampleflag = self.w3_flag & self.w4_flag & self.co_flag
+       print 'number of galaxies in sample = ',sum(self.sampleflag)
 
+       
 class galaxy():
    def __init__(self,nsaid,band='3'):
         print 'hello galaxy NSA ',nsaid
@@ -147,14 +152,17 @@ class galaxy():
 
 ############ MAIN PROGRAM ###############
 if __name__ == "__main__":
-    ngc_filament_ids = [56403,56409,56410,56411,56434,56455,56456,56462,56469,56482,56489,61690,61691,61692,67593,88353,90371,93403,94217,104307,104439,118647,119230,119289,120018,120053,142509,143682,143686,143827,143951,143986,162674,163136,163783,164224,164358]    
-#119303 taking out bc bad image
-    listname = ngc_filament_ids
-
     # READ IN CATALOGS
     cats = catalogs(args.nsapath)
     cats.define_sample()
+
     
+    ngc_filament_ids = [56403,56409,56410,56411,56434,56455,56456,56462,56469,56482,56489,61690,61691,61692,67593,88353,90371,93403,94217,104307,104439,118647,119230,119289,120018,120053,142509,143682,143686,143827,143951,143986,162674,163136,163783,164224,164358]    
+#119303 taking out bc bad image
+
+    listname = ngc_filament_ids
+    listname = cats.nsa.NSAID[cats.sampleflag]
+
     pause_flag = True
     for mynsaid in listname:
         mygals = galaxy(mynsaid,band=args.band)

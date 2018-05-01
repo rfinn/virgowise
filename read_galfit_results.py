@@ -23,10 +23,27 @@ import argparse
 import numpy as np
 #from virgowise.common import *
 import rungalfit
+import sys
+import argparse
+
+#Need user to define galaxy image/sigma/psf path later on
+parser = argparse.ArgumentParser(description ='Read galfit output and store results in fits table')
+#parser.add_argument('--band', dest = 'band', default = '3', help = 'unWISE image band to download: 3=12um, 4=22um (can only do one at a time for now.')
+parser.add_argument('--nsapath',dest = 'nsapath', default ='~/github/Virgo/tables/', help = 'Location of NSA tables fits')
+
+args = parser.parse_args()
+
+
+os.sys.path.append('~/github/virgowise/')
+from unwise-rungalfit import catalogs
+cats = catalogs.catalogs(args.nsapath)
+cats.define_sample()
 
 
 
 ngc_filament_ids = [56403,56409,56410,56411,56434,56455,56456,56462,56469,56482,56489,61690,61691,61692,67593,88353,90371,93403,94217,104307,104439,118647,119230,119289,120018,120053,142509,143682,143686,143827,143951,143986,162674,163136,163783,164224,164358]
+
+sample_ids = cats.nsa.NSAID[cats.sampleflag]
 
 #removing the following galaxies
 # 119303 - nothing there in unWISE image - could be coordinates or not detected
@@ -64,10 +81,10 @@ class galaxy:
     def __init__(self, nsaid):
         self.nsaid = nsaid
         self.nsaindex = nsadict[int(nsaid)]
-    def get_galfit_results(self,bands='4',printflag = False):
-        self.bands = bands
+    def get_galfit_results(self,band='4',printflag = False):
+        self.band = band
         #filename = 'NSA'+str(self.nsaid)-w+self.bands-1Comp-galfit-out.fits
-        filename = 'NSA'+str(self.nsaid)+'-'+'w'+self.bands+'-1Comp-galfit-out.fits'
+        filename = 'NSA'+str(self.nsaid)+'-'+'w'+self.band+'-1Comp-galfit-out.fits'
         #filename = 'NSA'+str(self.nsaid)-1Comp-galfit-out.fits
         # extension 2 is the model
         
@@ -89,13 +106,28 @@ class galaxy:
         self.chi2nu = t[9]
     def calc_sizeratio(self):
         self.sizeratio = self.re*unwisepixelscale/nsa.SERSIC_TH50[self.nsaindex]
-        print 'NSAID %6i-w%1i:  R12, Re, R12/Re = %8.2f %8.2f %8.2f'%(int(self.nsaid),int(self.bands),self.re*unwisepixelscale,nsa.SERSIC_TH50[self.nsaindex],self.sizeratio)
+        print 'NSAID %6i-w%1i:  R12, Re, R12/Re = %8.2f %8.2f %8.2f'%(int(self.nsaid),int(self.band),self.re*unwisepixelscale,nsa.SERSIC_TH50[self.nsaindex],self.sizeratio)
 
 
 if __name__ == "__main__":
 
-    for nsaid in ngc_filament_ids:
+    nsa_re = np.zeros(len(sample_ids),'f')
+    r12 = np.zeros(len(sample_ids),'f')
+    r22 = np.zeros(len(sample_ids),'f')
+    r12_err = np.zeros(len(sample_ids),'f')
+    r22_err = np.zeros(len(sample_ids),'f')
+    for i in range(len(sample_ids)):
+        nsaid = sample_ids[i]
         g = galaxy(nsaid)
-        g.get_galfit_results()
-        g.calc_sizeratio()
 
+        #g.calc_sizeratio()
+        nsa_re[i] = cats.nsa.SERSIC_TH50[g.nsaindex]
+        g.get_galfit_results(band='3')
+        r12[i] = g.re
+        r12_err[i] = g.re_err
+        try:
+            g.get_galfit_results(band='4')
+            r22[i] = g.re
+            r22_err[i] = g.re_err
+        except:
+            print 'problem accessing band 4 data for NSA ',cats.nsa.NSAID[g.nsaindex]
