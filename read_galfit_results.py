@@ -97,6 +97,7 @@ def plotresults():
     plt.gca().set_xscale('log')
     
     plt.axis([.2,80,.2,80])
+    plt.subplots_adjust(bottom=.15)
     plt.savefig('r12_vs_r22.png')
 
 # read in nsa catalog
