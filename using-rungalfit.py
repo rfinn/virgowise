@@ -131,13 +131,12 @@ class galaxy():
        #self.sampleflag = (self.wise.W3SNR>10) & (self.co.CO_DETECT==1)   
        self.sampleflag1 = self.wise.W3SNR>10
        self.sampleflag2 = self.co.CO_DETECT ==1
-   def get_wise_image(self,nsaid):
+   def get_wise_image(self,nsaid, bands='4'):
         galindex = self.nsadict[nsaid]
         baseurl = 'http://unwise.me/cutout_fits?version=allwise'
         imsize = '100'
-        #bands = '3'
-        bands = '4'
-        imurl = baseurl +'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(self.nsa.RA[galindex],self.nsa.DEC[galindex],imsize,bands)
+        self.bands = bands
+        imurl = baseurl +'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(self.nsa.RA[galindex],self.nsa.DEC[galindex],imsize,self.bands)
         wisetar = wget.download(imurl)
         tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
         wnames = tartemp.getnames()
@@ -191,9 +190,9 @@ class galaxy():
         self.BA = .4
         self.PA = 0
 
-        #rename output files from rungalfit like 1Comp-fit.log to be 1Comp-w3-.. and for w4 too
+        
    def initialize_galfit(self,nsaid):
-        self.gal1 = galfit(galname='NSA'+str(nsaid),image=self.image,sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp)
+        self.gal1 = galfit(galname='NSA'+str(nsaid)+'-'+'w'+self.bands,image=self.image,sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp)
                            #mask_image=self.mask_image,constraintflag=self.constraintflag,fitallflag=self.fitallflag,convflag=self.convflag)
         #i took out mask image = self.mask image
         #constraintflag=constraintflag
@@ -219,13 +218,14 @@ class galaxy():
 
 ############ MAIN PROGRAM ###############
 if __name__ == "__main__":
-#g and then nsaid above with NSA + str(nsaid)        
-    listname = [56403,56409,56410,56411,56434,56455,56456,56462,56469,56482,56489,61690,61691,61692,67593,88353,90371,93403,94217,104307,104439,118647,119230,119289,119303,120018,120053,142509,143682,143686,143827,143951,143986,162674,163136,163783,164224,164358]
-
+        
+    listname = [56403,56409,56410,56411,56434,56455,56456,56462,56469,56482,56489,61690,61691,61692,67593,88353,90371,93403,94217,104307,104439,118647,119230,119289,120018,120053,142509,143682,143686,143827,143951,143986,162674,163136,163783,164224,164358]
+    
+#119303 taking out bc bad image
     for mynsaid in listname:
         mygals = galaxy(args.t)
         mygals.define_sample()
-        mygals.get_wise_image(mynsaid)
+        mygals.get_wise_image(mynsaid,bands='4')
         mygals.set_image_names(mynsaid)
         mygals.set_sersic_params()
         mygals.initialize_galfit(mynsaid)
