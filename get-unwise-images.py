@@ -5,15 +5,18 @@ GOAL:
 - to retrieve unWISE images of galaxies given their NSA id
 
 PROCEDURE:
-- query Halpha directory
 - get list of NSAIDs
 - read in NSA
+- download unwise image for particular band as a tar file
+- extract the images from the tar file
+- rename the unwise images to something more user friendly
+- delete the tar file
 
 USEAGE:
 
 from within ipython on laptop
 
- %run ~/github/virgowise/get-unwise-images.py --nsapath '/Users/rfinn/github/Virgo/tables/' --band 3
+%run ~/github/virgowise/get-unwise-images.py --nsapath '/Users/rfinn/github/Virgo/tables/' --band 3
 
 REQUIRED FILES:
 - nsa fits catalog
@@ -64,7 +67,7 @@ nsadict = dict((a,b) for a,b in zip(nsa.NSAID,np.arange(len(nsa.NSAID))))
 
 ngc_filament_ids = [56403,56409,56410,56411,56434,56455,56456,56462,56469,56482,56489,61690,61691,61692,67593,88353,90371,93403,94217,104307,104439,118647,119230,119289,120018,120053,142509,143682,143686,143827,143951,143986,162674,163136,163783,164224,164358]
 
-nsaid = ngc_filament_ids[0:5]
+nsaid = ngc_filament_ids
 
 
 ###
@@ -89,7 +92,7 @@ for id in nsaid:
     print imurl
     wisetar = wget.download(imurl)  #trying to add in nsaid
     
-    print wisetar
+    #print wisetar
     tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
     wnames = tartemp.getnames()
     wmembers = tartemp.getmembers()
