@@ -58,19 +58,19 @@ parser.add_argument('--nsapath', dest = 'nsapath', default = '/home/share/catalo
 args = parser.parse_args() #brings in these arguments above
 
 
-#search_string = args.path + '/*-CS-snapshot.png' #allows me to index nsaid from Halpha images 
-#print search_string
-#input_images = glob.glob(search_string)
-#nsaid=[]
+search_string = args.path + '/*-CS-snapshot.png' #allows me to index nsaid from Halpha images 
+print search_string
+input_images = glob.glob(search_string)
+nsaid=[]
 
-#for f in input_images: #this physically index's the nsaid
-#    t = f.split('/')
-#    junk = t[-1].split('-')
-#    nsaid.append(junk[2])
-#    print nsaid
+for f in input_images: #this physically index's the nsaid
+    t = f.split('/')
+    junk = t[-1].split('-')
+    nsaid.append(junk[2])
+    print nsaid
 
 #nsaid = ['56462','67595','164358','54578','61690','61692']
-nsaid = ['143986']
+#nsaid = ['143986']
 #print nsaid
 #print str(nsaid)
 
@@ -83,7 +83,7 @@ nsadict = dict((a,b) for a,b in zip(nsa.NSAID,np.arange(len(nsa.NSAID))))
 
 #baseurl = 'http://unwise.me/cutout_fits?version=allwise'
 baseurl = 'http://unwise.me/cutout_fits?version=allwise'  
-#wisefilter1 = '3'
+wisefilter1 = '3'
 wisefilter2 = '4'
 imsize = '100' # max size = 256 pixels
 bands='4'
