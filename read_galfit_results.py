@@ -24,20 +24,25 @@ import numpy as np
 #from virgowise.common import *
 import rungalfit
 import sys
+import os
 import argparse
+
+os.sys.path.append('/Users/rfinn/github/virgowise/')
+from unwise_rungalfit import catalogs
 
 #Need user to define galaxy image/sigma/psf path later on
 parser = argparse.ArgumentParser(description ='Read galfit output and store results in fits table')
 #parser.add_argument('--band', dest = 'band', default = '3', help = 'unWISE image band to download: 3=12um, 4=22um (can only do one at a time for now.')
-parser.add_argument('--nsapath',dest = 'nsapath', default ='~/github/Virgo/tables/', help = 'Location of NSA tables fits')
+parser.add_argument('--nsapath',dest = 'nsapath', default ='/Users/rfinn/github/Virgo/tables/', help = 'Location of NSA tables fits')
 
 args = parser.parse_args()
 
 
-os.sys.path.append('~/github/virgowise/')
-from unwise-rungalfit import catalogs
-cats = catalogs.catalogs(args.nsapath)
+cats = catalogs(args.nsapath)
 cats.define_sample()
+
+
+
 
 
 
@@ -61,10 +66,6 @@ def print_galfit_results(parse_output):
             print '%6s : %5.2f'%(header_keywords[i],t[i])
 
 
-parser = argparse.ArgumentParser(description ='get galfit results for a sample of NGC galaxies')
-parser.add_argument('--catalogpath', dest = 'catalogpath', default = '~/github/Virgo/tables/', help = 'path to NSA catalog (nsa.virgo.fits)')
-
-args = parser.parse_args()
 
 
 # read in nsa catalog
@@ -72,7 +73,7 @@ args = parser.parse_args()
 #print 'this is what I think the NSA table filename is'
 #print args.catalogpath+'nsa.virgo.fits'
 
-nsa = fits.getdata(args.catalogpath+'nsa.virgo.fits')
+nsa = fits.getdata(args.nsapath+'nsa.virgo.fits')
 nsadict=dict((a,b) for a,b in zip(nsa.NSAID,np.arange(len(nsa.NSAID))))
 
 
@@ -84,12 +85,12 @@ class galaxy:
     def get_galfit_results(self,band='4',printflag = False):
         self.band = band
         #filename = 'NSA'+str(self.nsaid)-w+self.bands-1Comp-galfit-out.fits
-        filename = 'NSA'+str(self.nsaid)+'-'+'w'+self.band+'-1Comp-galfit-out.fits'
+        self.filename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+self.band+'-1Comp-galfit-out.fits'
         #filename = 'NSA'+str(self.nsaid)-1Comp-galfit-out.fits
         # extension 2 is the model
         
 
-        t = rungalfit.parse_galfit_1comp(filename)
+        t = rungalfit.parse_galfit_1comp(self.filename)
         if printflag:
             print_galfit_results(t)
         
@@ -118,16 +119,25 @@ if __name__ == "__main__":
     r22_err = np.zeros(len(sample_ids),'f')
     for i in range(len(sample_ids)):
         nsaid = sample_ids[i]
-        g = galaxy(nsaid)
+        g12 = galaxy(nsaid)
 
         #g.calc_sizeratio()
-        nsa_re[i] = cats.nsa.SERSIC_TH50[g.nsaindex]
-        g.get_galfit_results(band='3')
-        r12[i] = g.re
-        r12_err[i] = g.re_err
+        nsa_re[i] = cats.nsa.SERSIC_TH50[g12.nsaindex]
         try:
-            g.get_galfit_results(band='4')
-            r22[i] = g.re
-            r22_err[i] = g.re_err
-        except:
+            g12.get_galfit_results(band='3')
+            r12[i] = g12.re
+            r12_err[i] = g12.re_err
+        except IOError:
+            print 'problem accessing band 3 data for NSA ',cats.nsa.NSAID[i]
+            print 'filename = ',g12.filename
+            print os.path.exists(g12.filename)
+
+        g22 = galaxy(nsaid)
+        try:
+            g22.get_galfit_results(band='4')
+            r22[i] = g22.re
+            r22_err[i] = g22.re_err
+        except IOError:
             print 'problem accessing band 4 data for NSA ',cats.nsa.NSAID[i]
+            print 'filename = ',g22.filename
+            print os.path.exists(g22.filename)
