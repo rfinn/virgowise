@@ -1,20 +1,36 @@
 #!/usr/bin/env python
 
+"""
+GOAL:
+
+- to read in results from galfit analysis of WISE 12 and 22um images
+
+PROCEDURE:
+- get r-band size measurements from NSA catalog
+- get WISE 12mu size measurements
+- get WISE 22um size measurement
+- compare R(12) vs R(22)
+- calculate the ratio of R(12)/R(r).  compare to LCS results
+- calculate the ratio of R(22)/R(r).  compare to LCS results.
+- are filament galaxies more like core or external samples?
+
+USEAGE:
+
+from within ipython on laptop
+
+%run ~/github/virgowise/read_galfit_results.py --nsapath '/Users/rfinn/github/Virgo/tables/' 
+
+then to generate plot of R22 vs R12:
+
+plotresults() 
+
+REQUIRED FILES:
+- nsa fits catalog
 
 
-# get r-band size measurements from NSA catalog
+NOTES:
+"""
 
-# get WISE 12mu size measurements
-
-# get WISE 22um size measurement
-
-# compare R(12) vs R(22)
-
-# calculate the ratio of R(12)/R(r).  compare to LCS results
-
-# calculate the ratio of R(22)/R(r).  compare to LCS results.
-
-# are filament galaxies more like core or external samples?
 
 
 
