@@ -84,7 +84,7 @@ class galaxy:
         self.chi2nu = t[9]
     def calc_sizeratio(self):
         self.sizeratio = self.re*unwisepixelscale/nsa.SERSIC_TH50[self.nsaindex]
-        print 'NSAID %i:  R12, Re, R12/Re = %6.2f %6.2f %6.2f'%(int(self.nsaid),self.re*unwisepixelscale,nsa.SERSIC_TH50[self.nsaindex],self.sizeratio)
+        print 'NSAID %6i:  R12, Re, R12/Re = %6.2f %6.2f %6.2f'%(int(self.nsaid),self.re*unwisepixelscale,nsa.SERSIC_TH50[self.nsaindex],self.sizeratio)
 
 if __name__ == "__main__":
 
