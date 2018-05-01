@@ -16,9 +16,6 @@ import numpy as np
 import argparse
 from astropy.io import fits
 import wget
-from astroquery.sdss import SDSS
-from astroquery.ned import Ned
-from scipy.stats import scoreatpercentile
 import tarfile
 import glob
 import gzip
@@ -29,95 +26,14 @@ parser.add_argument('--l',dest = 'l', default =' /home/share/research/Virgo/galf
 parser.add_argument('--t',dest = 't', default ='~/github/Virgo/tables/', help = 'Location of NSA tables fits')
 
 args = parser.parse_args()
-#os.sys.path.append('/Users/rfinn/github/Virgo/programs/')#Dr.Finn local path
 
 #os.sys.path.append('~/github/Virgo/programs/')
 os.sys.path.append('~/github/virgowise/')
-from rungalfit import * #This code has all the definedfunctions that I can use
-
-#os.sys.path.append('/home/astro1/github/Virgo/tables/')
-#from nsa.virgo.fits import *
-#from nsa_wise.virgo.fits import *
-#from nsa_CO-HI.virgo.fits import *
-
-#Get catalog files
-#os.system('cp ' + args.t + '/nsa.virgo.fits')
-#os.system('cp ' + args.t + '/nsa_wise.virgo')
-#os.system('cp ' + args.t + '/nsa_CO-HI.virgo.fits')
-
-
-#nsa = fits.getdata(nsa.virgo.fits)
-#wise = fits.getdata(nsa_wise.virgo.fits)
-#co = fits.getdata(nsa_CO-HI.virgo.fits)
-
-
-#import catalogs from tables folder in Virgo Github
-
-'''
-nsa = fits.getdata(args.t+'nsa.virgo.fits')
-wise = fits.getdata(args.t+'nsa_wise.virgo.fits')
-co = fits.getdata(args.t+'nsa_CO-HI.virgo.fits')
+from rungalfit import * #This code has all the defined functions that I can use
 
 
 
-# define image properties
-galname = 'test'
-image = 'testimage.fits'
-sigma_image = 'testimage-sigma.fits'
-psf_image = 'testpsf.fits'
-psf_oversampling = 1
-mask_image = 'testimage_mask.fits'
-xminfit=1
-yminfit=1
-xmaxfit=100
-ymaxfit=100
-convolution_size=100
-magzp=20.
-pscale=2.5
-convflag=1 # apply psf convolution
-constraintflag=1 # add a constraint file?
-fitallflag=0
-ncomp=1
-
-
-
-# define first guess sersic parameters for galaxy 
-xc=50
-yc=50
-nsersic = 2
-mag = 7
-Re = 10.
-BA = .8
-PA = 0
-
-
-gal1 = galfit(galname=galname,image=image,sigma_image=sigma_image,psf_image=psf_image,psf_oversampling=psf_oversampling,mask_image=mask_image,xminfit=xminfit,yminfit=yminfit,xmaxfit=xmaxfit,ymaxfit=ymaxfit,convolution_size=convolution_size,magzp=magzp,pscale=pscale,convflag=convflag,constraintflag=constraintflag,fitallflag=fitallflag,ncomp=ncomp)
-
-
-## Create an input file for galfit ##
-#for args.l; want tofeed in args.l for list of input file?
-
-sampleflag = (wise.W3SNR>10) & (co.CO_DETECT==1)
-#Make a flag
-if (wise.W3SNR>10)&(Co.CO_DETECT==1):
-    images = sorted(glob.glob(args.l))#grabs each individual file with flag
-
-
-# create output names using functions defined in rungalfit
-gal1.create_output_names()
-gal1.open_galfit_input()
-gal1.write_image_params()
-gal1.add_simple_sersic_object(1,'sersic',xc,yc,mag,Re,nsersic,BA,PA)
-gal1.set_sky(0)
-gal1.write_sky(2)
-gal1.close_input_file()
-
-
-
-'''
-
-
-class galaxy():
+class catalogs():
    def __init__(self,catalog_path):
        # read in nsa, wise, co catalogs
        self.nsatab = catalog_path + 'nsa.virgo.fits'
@@ -126,11 +42,15 @@ class galaxy():
        self.nsa = fits.getdata(self.nsatab)
        self.wise = fits.getdata(self.wisetab)
        self.co = fits.getdata(self.cotab)
-       self.nsadict=dict((a,b) for a,b in zip(self.nsa.NSAID,np.arange(len(self.nsa.NSAID)))) #useful for us can easily look up galaxy ID's
+       self.nsadict=dict((a,b) for a,b in zip(self.nsa.NSAID,np.arange(len(self.nsa.NSAID)))) #useful for us can easily look up galaxy ID's       
    def define_sample(self):
        #self.sampleflag = (self.wise.W3SNR>10) & (self.co.CO_DETECT==1)   
        self.sampleflag1 = self.wise.W3SNR>10
        self.sampleflag2 = self.co.CO_DETECT ==1
+
+class galaxy():
+    def __init__(self):
+        print 'hello'
    def get_wise_image(self,nsaid, bands='4'):
         galindex = self.nsadict[nsaid]
         baseurl = 'http://unwise.me/cutout_fits?version=allwise'
@@ -146,9 +66,9 @@ class galaxy():
         for fname in wnames:
 
 
-           split = fname.split('-')
+           t = fname.split('-')
            
-           self.rename = 'NSA' + str(nsaid) + '-' + split[2] + '-' + split[3] + '-' + split[4]
+           self.rename = 'NSA-'+str(nsaid)+'-'+t[0]+'-'+t[2]+'-'+t[3]+'-'+t[4]
 
            print self.rename
            os.rename(fname, self.rename)
@@ -156,11 +76,7 @@ class galaxy():
               os.system('gunzip '+self.rename)
            if fname.find('img') > -1:
               self.inputimage = self.rename
-              #os.system runs this like a linux command
-  # def get_initial_from_sextractor(self):
-        # we will do this together
-
-  #      continue
+        os.remove(wisetar)
     
    def set_image_names(self,nsaid):
         # fix this to match the actual filenames
@@ -189,7 +105,6 @@ class galaxy():
         self.Re = 0.5
         self.BA = .4
         self.PA = 0
-
         
    def initialize_galfit(self,nsaid):
         self.gal1 = galfit(galname='NSA'+str(nsaid)+'-'+'w'+self.bands,image=self.image,sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp)
