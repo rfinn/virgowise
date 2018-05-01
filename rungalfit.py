@@ -92,7 +92,7 @@ class galfit:
 
         self.output_image=output_image
         # create galfit input file
-        self.galfile=str(self.galname)+'galfit.input.'+str(self.ncomp)+'Comp'
+        self.galfile=str(self.galname)+'-galfit.input.'+str(self.ncomp)+'Comp'
 
 
     def open_galfit_input(self):
