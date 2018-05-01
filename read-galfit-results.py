@@ -52,8 +52,8 @@ args = parser.parse_args()
 
 # read in nsa catalog
 
-print 'this is what I think the NSA table filename is'
-print args.catalogpath+'nsa.virgo.fits'
+#print 'this is what I think the NSA table filename is'
+#print args.catalogpath+'nsa.virgo.fits'
 
 nsa = fits.getdata(args.catalogpath+'nsa.virgo.fits')
 nsadict=dict((a,b) for a,b in zip(nsa.NSAID,np.arange(len(nsa.NSAID))))
@@ -64,8 +64,13 @@ class galaxy:
     def __init__(self, nsaid):
         self.nsaid = nsaid
         self.nsaindex = nsadict[int(nsaid)]
-    def get_galfit_results(self,printflag = False):
-        filename = 'NSA'+str(self.nsaid)+'-1Comp-galfit-out.fits' # extension 2 is the model
+    def get_galfit_results(self,bands='4',printflag = False):
+        self.bands = bands
+        #filename = 'NSA'+str(self.nsaid)-w+self.bands-1Comp-galfit-out.fits
+        filename = 'NSA'+str(self.nsaid)+'-'+'w'+self.bands+'-1Comp-galfit-out.fits'
+        #filename = 'NSA'+str(self.nsaid)-1Comp-galfit-out.fits
+        # extension 2 is the model
+        
 
         t = rungalfit.parse_galfit_1comp(filename)
         if printflag:
@@ -84,7 +89,8 @@ class galaxy:
         self.chi2nu = t[9]
     def calc_sizeratio(self):
         self.sizeratio = self.re*unwisepixelscale/nsa.SERSIC_TH50[self.nsaindex]
-        print 'NSAID %6i:  R12, Re, R12/Re = %8.2f %8.2f %8.2f'%(int(self.nsaid),self.re*unwisepixelscale,nsa.SERSIC_TH50[self.nsaindex],self.sizeratio)
+        print 'NSAID %6i-w%1i:  R12, Re, R12/Re = %8.2f %8.2f %8.2f'%(int(self.nsaid),int(self.bands),self.re*unwisepixelscale,nsa.SERSIC_TH50[self.nsaindex],self.sizeratio)
+
 
 if __name__ == "__main__":
 
