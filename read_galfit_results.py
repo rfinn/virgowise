@@ -130,4 +130,4 @@ if __name__ == "__main__":
             r22[i] = g.re
             r22_err[i] = g.re_err
         except:
-            print 'problem accessing band 4 data for NSA ',cats.nsa.NSAID[g.nsaindex]
+            print 'problem accessing band 4 data for NSA ',cats.nsa.NSAID[i]
