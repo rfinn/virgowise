@@ -34,15 +34,17 @@ from unwise_rungalfit import catalogs
 parser = argparse.ArgumentParser(description ='Read galfit output and store results in fits table')
 #parser.add_argument('--band', dest = 'band', default = '3', help = 'unWISE image band to download: 3=12um, 4=22um (can only do one at a time for now.')
 parser.add_argument('--nsapath',dest = 'nsapath', default ='/Users/rfinn/github/Virgo/tables/', help = 'Location of NSA tables fits')
+parser.add_argument('--makeplots',dest = 'makeplots', default =True, help = 'Plot results?  Default is True')
 
 args = parser.parse_args()
 
+if args.makeplots:
+    from matplotlib import pyplot as plt
 
+
+# read in catalogs
 cats = catalogs(args.nsapath)
 cats.define_sample()
-
-
-
 
 
 
@@ -66,7 +68,17 @@ def print_galfit_results(parse_output):
             print '%6s : %5.2f'%(header_keywords[i],t[i])
 
 
-
+def plotresults():
+    plt.figure()
+    plt.plot(r12,r22,'bo')
+    plt.errorbar(r12,r22,xerr=r12_err,yerr=r22_err,fmt="None",ecolor='k')
+    yline=np.arange(100)
+    plt.plot(yline,yline,'k--')
+    plt.xlabel('$R_{12} \ (pixels)$',fontsize=18)
+    plt.ylabel('$R_{22} \ (pixels)$',fontsize=18)
+    plt.title('Comparison of 12 and 22um Re from GALFIT')
+    plt.axis([0,50,0,50])
+    plt.savefig('r12_vs_r22.png')
 
 # read in nsa catalog
 
