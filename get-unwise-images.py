@@ -24,28 +24,20 @@ I want to download the unWISE images with the same NGC number as the Halpha imag
 
 -1/28/18 I want to somehow download the tar files from unWISE but know what galaxy is which by outputting the nsatlas numbers which is what our Halpha images are in. Also commenting details of code.
 
+5/1/18 - RAF Cleaning up code to remove remnants of Halpha
 
 """
 
-import sys
 import os
-from astropy.io import fits
 import numpy as np
-from astroquery.sdss import SDSS
-from astroquery.ned import Ned
-from astropy import coordinates as coords
-import astropy.units as u
-from matplotlib import pyplot as plt
 from astropy.io import fits
 import wget
-from scipy.stats import scoreatpercentile
 import tarfile
 import argparse
-import glob
 import gzip
 
 
-parser = argparse.ArgumentParser(description ='Download unWISE images for specific NSA galaxies')
+parser = argparse.ArgumentParser(description ='Download unWISE images for specific NSA galaxies in current directory')
 parser.add_argument('--band', dest = 'band', default = '3', help = 'unWISE image band to download: 3=12um, 4=22um (can only do one at a time for now.')
 parser.add_argument('--nsapath', dest = 'nsapath', default = '/Users/rfinn/github/Virgo/tables/', help = 'full path to Virgo NSA catalog (nsa.virgo.fits)')
 args = parser.parse_args() #brings in these arguments above
@@ -81,38 +73,30 @@ nsaid = ngc_filament_ids
 
 
 baseurl = 'http://unwise.me/cutout_fits?version=allwise'  
+
+# setting image size to 100 pixels for now
+# may need to adjust this for larger galaxies
 imsize = '100' # max size = 256 pixels
-bands='4'
+
 
 
 for id in nsaid:
-#for j in range(1):
-    #id = nsaid[j]
     i = nsadict[int(id)]
     print i
     print 'RA= ',nsa.RA[i]
     print 'DEC= ',nsa.DEC[i]
-    ra = nsa.RA[i]
-    dec = nsa.DEC[i]
-    imurl = baseurl+'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(ra,dec,imsize,bands)
+    imurl = baseurl+'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(nsa.RA[i],nsa.DEC[i],imsize,args.band)
     print imurl
     wisetar = wget.download(imurl)  #trying to add in nsaid
     
     
     tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
-    #tartemp = tartemp.add(id)
     wnames = tartemp.getnames()
-    #wnames.append(nsaid)
     wmembers = tartemp.getmembers()
-    #path = '/home/share/research/Virgo/Galfit2018'
     tartemp.extractall()
     for a in wmembers:
         os.rename(a.name, str(id)+'-'+a.name)    
 
-    #rename = []
-
-    
-    
     for i in wnames:
         split = i.split('-')
         print split
