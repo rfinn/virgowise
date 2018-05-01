@@ -13,7 +13,7 @@ USEAGE:
 
 from within ipython on laptop
 
- %run ~/github/virgowise/get-unwise-image-Halpha.py --nsapath '/Users/rfinn/research/NSA/'
+ %run ~/github/virgowise/get-unwise-images.py --nsapath '/Users/rfinn/github/Virgo/tables/' --band 3
 
 REQUIRED FILES:
 - nsa fits catalog
@@ -24,7 +24,7 @@ I want to download the unWISE images with the same NGC number as the Halpha imag
 
 -1/28/18 I want to somehow download the tar files from unWISE but know what galaxy is which by outputting the nsatlas numbers which is what our Halpha images are in. Also commenting details of code.
 
-5/1/18 - RAF Cleaning up code to remove remnants of Halpha
+5/1/18 - RAF Cleaning up code to remove remnants of Halpha.  Program now downloads images for a list of NSA ids.
 
 """
 
@@ -47,7 +47,7 @@ args = parser.parse_args() #brings in these arguments above
 ### READ IN NSA CATALOG
 ###
 
-nsatab = args.nsapath+'nsa_v0_1_2.fits'
+nsatab = args.nsapath+'nsa.virgo.fits'
 nsa = fits.getdata(nsatab)
 nsadict = dict((a,b) for a,b in zip(nsa.NSAID,np.arange(len(nsa.NSAID))))
 
@@ -64,7 +64,7 @@ nsadict = dict((a,b) for a,b in zip(nsa.NSAID,np.arange(len(nsa.NSAID))))
 
 ngc_filament_ids = [56403,56409,56410,56411,56434,56455,56456,56462,56469,56482,56489,61690,61691,61692,67593,88353,90371,93403,94217,104307,104439,118647,119230,119289,120018,120053,142509,143682,143686,143827,143951,143986,162674,163136,163783,164224,164358]
 
-nsaid = ngc_filament_ids
+nsaid = ngc_filament_ids[0:5]
 
 
 ###
@@ -82,24 +82,25 @@ imsize = '100' # max size = 256 pixels
 
 for id in nsaid:
     i = nsadict[int(id)]
-    print i
-    print 'RA= ',nsa.RA[i]
-    print 'DEC= ',nsa.DEC[i]
+    print 'NSA ID = ',id
+    #print 'RA= ',nsa.RA[i]
+    #print 'DEC= ',nsa.DEC[i]
     imurl = baseurl+'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(nsa.RA[i],nsa.DEC[i],imsize,args.band)
     print imurl
     wisetar = wget.download(imurl)  #trying to add in nsaid
     
-    
+    print wisetar
     tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
     wnames = tartemp.getnames()
     wmembers = tartemp.getmembers()
     tartemp.extractall()
-    for a in wmembers:
-        os.rename(a.name, str(id)+'-'+a.name)    
+    for a in wnames:
+        t = a.split('-')
+        newname = 'NSA-'+str(id)+'-'+t[0]+'-'+t[2]+'-'+t[3]+'-'+t[4]
+        os.rename(a, newname)
+    # get rid of tar file
+    os.remove(wisetar)
 
-    for i in wnames:
-        split = i.split('-')
-        print split
     
 
 
