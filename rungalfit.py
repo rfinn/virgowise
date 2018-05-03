@@ -104,9 +104,9 @@ class galfit:
         self.galfit_input.write('A) '+self.image+'              # Input data image (FITS file)\n')
         self.galfit_input.write('B) '+self.output_image+'       # Name for the output image\n')
         self.galfit_input.write('C) %s                # Sigma image name (made from data if blank or "none") \n'%(self.sigma_image))
-        #if self.convflag:
-        #    self.galfit_input.write('D) '+self.psf_image+'     # Input PSF image and (optional) diffusion kernel\n')
-        #    self.galfit_input.write('E) %i                   # PSF oversampling factor relative to data\n'%(self.psf_oversampling))
+        if self.convflag:
+            self.galfit_input.write('D) '+self.psf_image+'     # Input PSF image and (optional) diffusion kernel\n')
+            self.galfit_input.write('E) %i                   # PSF oversampling factor relative to data\n'%(self.psf_oversampling))
         #if self.fitallflag:
         #    self.galfit_input.write('F)            # Pixel mask (ASCII file or FITS file with non-0 values)\n')
         #else:
@@ -204,6 +204,7 @@ class galfit:
         #print 'self.fitall = ',self.fitall
         self.create_output_names()
         self.open_galfit_input()
+        print 'in rungalfit.run_galfit, self.psf_image = ',self.psf_image
         self.write_image_params()
         #print 'self.fitall = ',self.fitall
         self.write_sersic(1,'sersic')
