@@ -27,7 +27,11 @@ NOTES:
 """
 
 from astropy.io import fits
-import pyds9
+#import pyds9
+import os
+import numpy as np
+from matplotlib import pyplot as plt
+import glob
 
 class maskimage():
     def __init__(self,imagename,sepath):
@@ -56,52 +60,71 @@ class maskimage():
 
     def remove_central_object(self):
         sexout=fits.getdata('test.cat',2)
-        sexnumber=sexout['col1']
-        xsex=sexout['col2']
-        ysex=sexout['col3']
+        sexnumber=sexout['NUMBER']
+        xsex=sexout['X_IMAGE']
+        ysex=sexout['Y_IMAGE']
+
+        mask_image = fits.getdata(self.mask_image)
+        xmax,ymax = mask_image.shape
+        xmin=1
+        ymin=1
         xcenter=1.*(xmax-xmin)/2.
         ycenter=1.*(ymax-ymin)/2.
-        dist=sqrt((ycenter-ysex)**2+(xcenter-xsex)**2)
+        dist=np.sqrt((ycenter-ysex)**2+(xcenter-xsex)**2)
 
         #   find object ID
-        objIndex=where(dist == min(dist))
-        objNumber=sexnumber[objIndex]
+        objNumber=sexnumber[dist == min(dist)]
         objNumber=objNumber[0] # not sure why above line returns a list
         print 'object number = ',objNumber
         #   use iraf imexam to replace object ID values with zero
-        iraf.imreplace(mask_image,value=0,lower=objNumber-.5,upper=objNumber+.5)
+        self.replace_value(self.mask_image,objNumber)
 
+    def replace_value(self,image,value):
+        # sets value in image to zeros
+        t = fits.open(image)
+        t[0].data = t[0].data*(~(t[0].data == value))
+        t.writeto(image,overwrite=True)
+
+        
+    def show_image_mask(self):
+        a = fits.getdata(self.image)
+        b = fits.getdata(self.mask_image)
+        plt.figure(figsize = (8,4))
+        plt.subplot(1,2,1)
+        plt.imshow(a)
+        plt.title(self.image)
+        plt.subplot(1,2,2)
+        plt.imshow(b)
+        plt.title(self.mask_image)
+        
     def edit_mask(self):
         ######################
         ### EDIT MASK
         ######################
-        d=pyds9.DS9()
+        review_mask_flag = True
         while review_mask_flag:
-            d.set('frame delete all')
-            s='file new '+self.image
-            try:
-                d.set(s)
-                d.set('zoom to fit')
-            except:
-                print "couldn't access: ",s
-            s='file new '+sex_image
-            d.set(s)
-            d.set('zoom to fit')
-            s='file new '+mask_image
-            d.set(s)
-            d.set('zoom to fit')
+            self.show_image_mask()
             flag=raw_input('edit the mask? \n')
             if flag.find('n') > -1:
                 review_mask_flag = 0
             elif flag.find('y') > -1:
-                editflag=int(raw_input('enter 0 to subtract an object, 1 to add an object'))
+                editflag=int(raw_input('enter 0 to subtract an object, 1 to add an object\n'))
                 if editflag == 0:
                     objid=float(raw_input('enter object id to remove from mask'))
-                    iraf.imreplace(mask_image,value=0,lower=objid-.5,upper=objid+.5)
-                elif editflag == 1:
-                    print 'entering imedit'
-                    a,b=runimedit(mask_image)
+                    self.replace_value(self.mask_image, int(objid))
+                #elif editflag == 1:
+                #    print 'entering imedit'
+                #    a,b=runimedit(mask_image)
             elif flag.find('q') > -1:
                 quitflag=1
                 return quitflag
 
+def mask_all(band):
+    sepath = '/Users/rfinn/github/Virgo/sextractor/' 
+    files = glob.glob('NSA*unwise-w'+str(band)+'-img-m.fits')
+    for f in files:
+        m = maskimage(f,sepath)
+        m.run_sextractor()
+        m.remove_central_object()
+        m.edit_mask()
+        
