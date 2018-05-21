@@ -38,7 +38,7 @@ NOTES:
 
 #Natasha goal for next week: TO SET UP A PARAMETER INPUT FILE AND TRY EVENTUALLY FOR GALFIT
 import os
-import pyds9
+#import pyds9
 import numpy as np
 import argparse
 from astropy.io import fits
