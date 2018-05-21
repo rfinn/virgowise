@@ -17,6 +17,17 @@ from within ipython on laptop
 
 %run ~/github/virgowise/using-rungalfit.py --virgo '/Users/rfinn/github/Virgo/' 
 
+For comparison with LCS galaxies
+
+%run ~/Dropbox/pythonCode/LCSanalyzeblue.py
+
+lcs_listname = s.s.NSAID[s.sampleflag]
+band = '3'
+
+%run /Users/rfinn/github/virgowise/unwise_rungalfit.py --nsapath '/Users/rfinn/research/NSA/' --nsafile 'full' --virgopath '/Users/rfinn/github/Virgo/'
+
+t = process_list(lcs_listname,'3',convolution_flag = False)
+
 REQUIRED FILES:
 - nsa fits catalog
 
@@ -84,6 +95,7 @@ class galaxy():
         self.band = band
         self.image_rootname = 'NSA-'+str(self.nsaid)+'-unwise-w'+str(self.band)
         self.image = self.image_rootname+'-img-m.fits'
+        self.mask_image = 'masks/'+self.image.split('.fits')[0]+'-mask.fits'
         self.sigma_image = self.image_rootname+'-std-m.fits'
         self.invvar_image = self.image_rootname+'-invvar-m.fits'
    def get_wise_image(self):
@@ -155,7 +167,7 @@ class galaxy():
         
    def initialize_galfit(self,nsaid,convflag=1):
         print 'self.psfimage = ',self.psf_image
-        self.gal1 = galfit(galname=self.image_rootname,image=self.image,sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp,convflag=convflag)
+        self.gal1 = galfit(galname=self.image_rootname,image=self.image, mask_image = self.mask_image, sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp,convflag=convflag)
         
    def run_galfit_wise(self,fitBA=1,fitPA=1):
         os.system('cp '+args.virgopath+'wisepsf/'+self.psf_image+' .')
@@ -185,7 +197,7 @@ class galaxy():
         self.error = t[8]
         self.chi2nu = t[9]
 
-def process_list(listname,band,convolution_flag=True):
+def process_list(listname,band,convolution_flag=True,getwise=True):
 
     pause_flag = True
     multiframe = np.zeros(len(listname),'bool')
@@ -193,17 +205,30 @@ def process_list(listname,band,convolution_flag=True):
     for mynsaid in listname:
         i += 1
         mygals = galaxy(mynsaid,band=band)
-        mygals.get_wise_image()
-        multiframe[i] = mygals.multiframe
-        if mygals.multiframe:
-            print '\n NSA ',mynsaid,' is on multiple frames - skipping for now \n \ntarf'
-            continue
+        if getwise:
+            mygals.get_wise_image()
+            multiframe[i] = mygals.multiframe
+            if mygals.multiframe:
+                print '\n NSA ',mynsaid,' is on multiple frames - skipping for now \n \ntarf'
+                continue
         mygals.set_image_names(mynsaid)
         mygals.set_sersic_params()
         # set PA and BA to NSA values
         # fix these values
         mygals.initialize_galfit(mynsaid,convflag=0)
+        mygals.run_galfit_wise(fitBA=1,fitPA=1)
+        galfile = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+mygals.band+'-1Comp-galfit-out.fits'
+        altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+mygals.band+'-1Comp-noconv-fitBAPA-galfit-out.fits'
+        if os.path.exists(altfilename):
+            os.remove(altfilename)
+        os.rename(galfile,altfilename)
         mygals.run_galfit_wise(fitBA=0,fitPA=0)
+        altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+mygals.band+'-1Comp-noconv-galfit-out.fits'
+        if os.path.exists(altfilename):
+            os.remove(altfilename)
+        os.rename(galfile,altfilename)
+
+    
         # get output from no convolution - use mag and Re as input with convolution
 
         # skipping convolution for now
@@ -211,10 +236,7 @@ def process_list(listname,band,convolution_flag=True):
         # might be the oversampling number
         if convolution_flag:
             mygals.get_galfit_results()
-            noconvfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+mygals.band+'-1Comp-noconv-galfit-out.fits'
-            if os.path.exists(noconvfilename):
-                os.remove(noconvfilename)
-            os.rename(mygals.filename,noconvfilename)
+            
             # keep PA and BA fixed to NSA values as we did with LCS
             mygals.PA = cats.nsa.SERSIC_PHI[cats.nsadict[mygals.nsaid]]
             mygals.BA = cats.nsa.SERSIC_BA[cats.nsadict[mygals.nsaid]]
@@ -243,7 +265,8 @@ if __name__ == "__main__":
     if args.nsafile == 'virgo':
         cats.define_sample()
         listname = cats.nsa.NSAID[cats.sampleflag]
-    
+
+    #lcs = fits.getdata('/Users/rfinn/research/LocalClusters/NSAmastertables/LCS_all_size.fits')
     #ngc_filament_ids = [56403,56409,56410,56411,56434,56455,56456,56462,56469,56482,56489,61690,61691,61692,67593,88353,90371,93403,94217,104307,104439,118647,119230,119289,120018,120053,142509,143682,143686,143827,143951,143986,162674,163136,163783,164224,164358]    
 #119303 taking out bc bad image
 

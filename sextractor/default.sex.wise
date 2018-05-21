@@ -12,9 +12,9 @@ PARAMETERS_NAME  default.param  # name of the file containing catalog contents
 #------------------------------- Extraction ----------------------------------
  
 DETECT_TYPE      CCD            # CCD (linear) or PHOTO (with gamma correction)
-DETECT_MINAREA   2              # minimum number of pixels above threshold
-DETECT_THRESH    1.5            # <sigmas> or <threshold>,<ZP> in mag.arcsec-2
-ANALYSIS_THRESH  1.5            # <sigmas> or <threshold>,<ZP> in mag.arcsec-2
+DETECT_MINAREA   3              # minimum number of pixels above threshold
+DETECT_THRESH    2            # <sigmas> or <threshold>,<ZP> in mag.arcsec-2
+ANALYSIS_THRESH  2            # <sigmas> or <threshold>,<ZP> in mag.arcsec-2
  
 FILTER           N              # apply filter for detection (Y or N)?
 FILTER_NAME      tophat_2.5_3x3.conv   # name of the file containing the filter

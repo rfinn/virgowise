@@ -42,6 +42,7 @@ import rungalfit
 import sys
 import os
 import argparse
+import glob
 
 os.sys.path.append('/Users/rfinn/github/virgowise/')
 from unwise_rungalfit import catalogs
@@ -168,20 +169,71 @@ def plotresults():
     plt.subplots_adjust(bottom=.15)
     plt.savefig('r12_vs_r22.png')
 
-def comparelcs():
-    maxmag=10
-    flag =  (m12 < maxmag) & (r12 < 20)
-    plt.figure()
-    plt.scatter(lcs_r24[flag],r12[flag],c=m12[flag],vmin=6,vmax=maxmag,s=80)#,cmap='jet')
-    plt.colorbar()
-    plt.errorbar(lcs_r24[flag],r12[flag],yerr=r12_err[flag],xerr=lcs_r24_err[flag],fmt="None",ecolor='k',alpha=0.5)
-    xline = np.arange(0,30)
-    plt.plot(xline,xline,'k--')
-    plt.axis([-2,25,-2,25])
-    plt.xlabel('Re(24) MIPS (arcsec)',fontsize=18)
-    plt.ylabel('Re(12) WISE (arcsec)',fontsize=18)
-    plt.savefig('MIPS24-WISE12.png')
+def comparelcs(maxmag=10,xmax=25):
+    flag =  (w3mpro < maxmag) & (r12 < 20) & (lcs_r24 > 0.)
+    print 'number of galaxies = ',sum(flag)
+    plt.figure(figsize=(8,3))
+    plt.subplots_adjust(bottom=.2,wspace=.4)
+    #plt.subplot(1,2,1)
+    y = r12 
+    yerror = r12_err 
+    plt.plot(y[flag],lcs_r24[flag],'bo')
+        
+    plt.errorbar(y[flag],lcs_r24[flag],xerr=yerror[flag],yerr=lcs_r24_err[flag],fmt="None",ecolor='k',alpha=0.5)
+    xline = np.arange(0,100,10)
+    #plt.plot(xline,xline,'k--')
 
+    #plt.gca().set_yscale('log')
+    #plt.gca().set_xscale('log')
+
+    # fit line in log space
+    t2 = np.log10(lcs_r24[flag])
+
+    t1 = np.log10(r12[flag])
+    c = np.polyfit(t1,t2,2)
+    xline = np.arange(0,1.6,.1)
+    yline = np.polyval(c,xline)
+    plt.plot(10**xline,10**yline,'k--',label='fit')
+    
+    plt.ylabel('$MIPS \ R_{24} \ (arcsec)$',fontsize=12)
+    plt.xlabel('$WISE \ R_{12} \ (arcsec)$',fontsize=12)
+    #plt.ylabel('$\left(R_{12}-R{24}\right)/ \left(0.5  (R_{12} + R_{24}) \right) 100$ ',fontsize=18)
+    plt.axis([3,xmax,3,xmax])
+    plt.xticks(np.arange(5,25,5))
+    plt.yticks(np.arange(5,25,5))
+    #plt.savefig('MIPS24-WISE12.png')
+    plt.title('$R_{24} \ (MIPS) \ vs \ R_{12} \ (WISE)$')
+
+    #plt.subplot(1,2,2)
+    plt.figure(figsize=(8,4))
+    plt.subplots_adjust(bottom=.2,wspace=.4)
+    x = r12[flag]
+    xerror = r12_err[flag]
+    yfit = 10.**np.polyval(c,np.log10(x))
+    y = (lcs_r24[flag] - yfit)/lcs_r24[flag]
+    yerror = (lcs_r24_err[flag])/lcs_r24[flag]
+                                     
+    plt.plot(x,y,'bo')
+    plt.axis([3,xmax,-.5,.5])
+    plt.errorbar(x,y,yerr=yerror,xerr=xerror,fmt="None",ecolor='k',alpha=0.5)
+    rms = np.std(y)
+    print 'std of y = ',rms
+    
+    plt.axhline(y=0,ls='--',color='k')
+    plt.xlabel('$ R_{12} \ (arcsec)$',fontsize=14)
+    plt.ylabel('$( R_{24} - R_{predicted})/R_{24} $',fontsize=14)
+    xline = np.arange(0,xmax+1)
+    yline = .2*np.ones(len(xline))
+    plt.fill_between(xline,yline,y2=-1*yline,color='.95')
+    plt.fill_between(xline,rms*yline/.2,y2=-1*rms*yline/.2,color='.8')
+    s = 'RMS = %.2f'%(rms)
+    plt.text(0.9,0.9,s,horizontalalignment = 'right',transform = plt.gca().transAxes,fontsize=14)
+    plt.title('$Predicting \ R_{24} \ from \ R_{12}$',fontsize=14)
+
+    plt.savefig('/Users/rfinn/proposals/NASA2018/MIPS24-WISE12.png')
+
+
+    
 # read in nsa catalog
 
 #print 'this is what I think the NSA table filename is'
@@ -196,13 +248,13 @@ class lcs:
         self.nsadict=dict((a,b) for a,b in zip(self.s.NSAID,np.arange(len(self.s.NSAID))))
         
 class galaxy:
-    def __init__(self, nsaid):
+    def __init__(self, nsaid,band):
         self.nsaid = nsaid
         self.nsaindex = nsadict[int(nsaid)]
-    def get_galfit_results(self,band='4',printflag = False):
         self.band = band
+    def get_galfit_results(self,filename,printflag = False):
         #filename = 'NSA'+str(self.nsaid)-w+self.bands-1Comp-galfit-out.fits
-        self.filename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+self.band+'-1Comp-galfit-out.fits'
+        self.filename = filename
         #filename = 'NSA'+str(self.nsaid)-1Comp-galfit-out.fits
         # extension 2 is the model
         
@@ -226,10 +278,19 @@ class galaxy:
         self.sizeratio = self.re*unwisepixelscale/nsa.SERSIC_TH50[self.nsaindex]
         print 'NSAID %6i-w%1i:  R12, Re, R12/Re = %8.2f %8.2f %8.2f'%(int(self.nsaid),int(self.band),self.re*unwisepixelscale,nsa.SERSIC_TH50[self.nsaindex],self.sizeratio)
 
-
+virgoflag = True
 if __name__ == "__main__":
+
     infile='/Users/rfinn/research/LocalClusters/NSAmastertables/LCS_all_size.fits'
     lcs = lcs(infile)
+    if virgoflag:
+        # get list of ids
+        sample_ids = []
+        files = glob.glob('NSA-*-unwise-w3-1Comp-galfit-out.fits')
+        for f in files:
+            t = f.split('-')
+            sample_ids.append(int(t[1]))
+        print 'number of galaxies in virgo flag = ',len(sample_ids)
     nsa_re = np.zeros(len(sample_ids),'f')
     r12 = np.zeros(len(sample_ids),'f')
     r22 = np.zeros(len(sample_ids),'f')
@@ -239,19 +300,33 @@ if __name__ == "__main__":
     lcs_r24 = np.zeros(len(sample_ids),'f')
     lcs_r24_err = np.zeros(len(sample_ids),'f')
     memb = np.zeros(len(sample_ids),'f')
-    lcs_m24 = np.zeros(len(sample_ids),'f')
+    w3snr = np.zeros(len(sample_ids),'f')
+    w3mpro = np.zeros(len(sample_ids),'f')
+    wise_nblend = np.zeros(len(sample_ids),'f')
+    lcs_m24 = np.zeros(len(sample_ids),'i')
     for i in range(len(sample_ids)):
-        lcs_r24[i] = lcs.s.fre1[lcs.nsadict[sample_ids[i]]]*mipspixelscale # in arcsec
-        lcs_r24_err[i] = lcs.s.fre1err[lcs.nsadict[sample_ids[i]]]*mipspixelscale # in arcsec
-        lcs_m24[i] = lcs.s.fmag1[lcs.nsadict[sample_ids[i]]]
+        try:
+            lcs_r24[i] = lcs.s.fre1[lcs.nsadict[sample_ids[i]]]*mipspixelscale # in arcsec
+            lcs_r24_err[i] = lcs.s.fre1err[lcs.nsadict[sample_ids[i]]]*mipspixelscale # in arcsec
+            lcs_m24[i] = lcs.s.fmag1[lcs.nsadict[sample_ids[i]]]
+        except:
+            print "couldn't get MIPS fits"
+        w3snr[i] = cats.wise.W3SNR[cats.nsadict[sample_ids[i]]]
+        w3mpro[i] = cats.wise.W3MPRO[cats.nsadict[sample_ids[i]]]
+        wise_nblend[i] = cats.wise.NB[cats.nsadict[sample_ids[i]]]
         #memb[i] = lcs.membflag
         nsaid = sample_ids[i]
-        g12 = galaxy(nsaid)
+        g12 = galaxy(nsaid,band='3')
 
         #g.calc_sizeratio()
         nsa_re[i] = cats.nsa.SERSIC_TH50[g12.nsaindex]
+        #filename = 'NSA-'+str(g12.nsaid)+'-unwise-'+'w3-1Comp-noconv-fitBAPA-galfit-out.fits'
+        if virgoflag:
+            filename = 'NSA-'+str(g12.nsaid)+'-unwise-'+'w3-1Comp-galfit-out.fits'
+        else:
+            filename = 'NSA-'+str(g12.nsaid)+'-unwise-'+'w3-1Comp-noconv-galfit-out.fits'
         try:
-            g12.get_galfit_results(band='3')
+            g12.get_galfit_results(filename)
             r12[i] = g12.re*unwisepixelscale
             r12_err[i] = g12.re_err*unwisepixelscale
             m12[i] = g12.mag
@@ -260,9 +335,13 @@ if __name__ == "__main__":
             print 'filename = ',g12.filename
             print os.path.exists(g12.filename)
 
-        g22 = galaxy(nsaid)
+        g22 = galaxy(nsaid,band='4')
+        if virgoflag:
+            filename = 'NSA-'+str(g22.nsaid)+'-unwise-'+'w4-1Comp-galfit-out.fits'
+        else:
+            filename = 'NSA-'+str(g22.nsaid)+'-unwise-'+'w4-1Comp-noconv-galfit-out.fits'
         try:
-            g22.get_galfit_results(band='4')
+            g22.get_galfit_results(filename)
             r22[i] = g22.re*unwisepixelscale
             r22_err[i] = g22.re_err*unwisepixelscale
         except IOError:

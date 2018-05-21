@@ -264,7 +264,7 @@ class galfit:
         try:
             d.set('frame delete all')
         except NameError:
-            d=pyds9.ds9()
+            d=pyds9.DS9()
             d.set('frame delete all')
         #print 'file to display = ',self.output_image
         s='file new multiframe '+self.output_image
@@ -316,7 +316,10 @@ class galfit:
         if self.mask_image == None:
             print 'no mask available'
         else:
-            d.set('file '+self.mask_image)
+            try:
+                d.set('file '+self.mask_image)
+            except:
+                print "couldn't load mask file ",self.mask_image
 
         for k in range(2,endframe):
             if k == 5:
