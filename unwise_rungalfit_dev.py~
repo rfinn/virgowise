@@ -268,18 +268,18 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
 
 ########################################################
     
-#def setup(listname):
-#   for i in listname:
-#      first=galaxy(i)
-#      first.get_wise_image()
-#      first.set_image_names(i)
-#      first.getpix()
-#      first.set_sersic_params()
-#      first.initialize_galfit(i)
-#      first.run_galfit_wise()
-#      first.get_galfit_results()
-#
-#   process_list(listname,band=3,convolution_flag=False,getwise=True)
+def setup(listname):
+   for i in listname:
+      first=galaxy(i)
+      first.get_wise_image()
+      first.set_image_names(i)
+      first.getpix()
+      first.set_sersic_params()
+      first.initialize_galfit(i)
+      first.run_galfit_wise()
+      first.get_galfit_results()
+
+   process_list(listname,band=3,convolution_flag=False,getwise=True)
 
 ########################################################
 
