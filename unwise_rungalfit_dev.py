@@ -203,7 +203,7 @@ class galaxy():
         self.filename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
         t = parse_galfit_1comp(self.filename)
         if printflag:
-            self.print_galfit_results(t)
+            self.gal1.print_galfit_results(self.filename)
         
         header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','ERROR','CHI2NU']
         self.xc, self.xc_err = t[0]
@@ -217,7 +217,7 @@ class galaxy():
         self.error = t[8]
         self.chi2nu = t[9]
         
-    def write_results(self):
+   def write_results(self):
         self.get_galfit_results()
         # Write a logfile 
         logfilename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-log.txt'
@@ -275,7 +275,7 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
 
 
         
-
+        mygals.write_results()
         if pause_flag:
             t = raw_input('hit any key to continue to next galaxy \n \t enter q to quit \n \t enter C to continue without pausing \n')
 
