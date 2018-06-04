@@ -225,7 +225,7 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
             if mygals.multiframe:
                 print '\n NSA ',mynsaid,' is on multiple frames - skipping for now \n \ntarf'
                 continue
-        mygals.set_image_names(mynsaid)
+        mygals.set_image_names()
         mygals.getpix()
         mygals.set_sersic_params()
         # set PA and BA to NSA values
