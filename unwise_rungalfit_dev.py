@@ -134,7 +134,7 @@ class galaxy():
         os.remove(wisetar)
         print 'self.rename = ',self.rename
     
-   def set_image_names(self,nsaid):
+   def set_image_names(self):
         self.psf_image = 'wise-w3-psf-wpro-09x09-05x05.fits' #just using center til, doesn't matter usually
         self.psf_oversampling = 8
         #mask_image = 'testimage_mask.fits' no mask image 
