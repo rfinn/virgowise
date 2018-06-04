@@ -179,7 +179,7 @@ class galaxy():
         self.BA = cats.nsa.SERSIC_BA[cats.nsadict[self.nsaid]]
         self.PA = cats.nsa.SERSIC_PHI[cats.nsadict[self.nsaid]]
         
-   def initialize_galfit(self,nsaid,convflag=1):
+   def initialize_galfit(self,convflag=1):
         print 'self.psfimage = ',self.psf_image
         self.gal1 = galfit(galname=self.image_rootname,image=self.image, mask_image = self.mask_image, sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp,convflag=convflag)
         
@@ -230,7 +230,7 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
         mygals.set_sersic_params()
         # set PA and BA to NSA values
         # fix these values
-        mygals.initialize_galfit(mynsaid,convflag=0)
+        mygals.initialize_galfit(convflag=0)
         mygals.run_galfit_wise(fitBA=1,fitPA=1)
         galfile = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-galfit-out.fits'
         altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-noconv-fitBAPA-galfit-out.fits'
