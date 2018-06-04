@@ -101,6 +101,12 @@ class galaxy():
         self.sigma_image = self.image_rootname+'-std-m.fits'
         self.invvar_image = self.image_rootname+'-invvar-m.fits'
 
+        # add code to remove the log file if it exists
+
+        # add code to write the header line into the log file
+
+        # close log file
+
    def get_wise_image(self):
         galindex = cats.nsadict[self.nsaid]
         baseurl = 'http://unwise.me/cutout_fits?version=allwise'
@@ -197,7 +203,7 @@ class galaxy():
         self.filename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
         t = parse_galfit_1comp(self.filename)
         if printflag:
-            print_galfit_results(t)
+            self.print_galfit_results(t)
         
         header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','ERROR','CHI2NU']
         self.xc, self.xc_err = t[0]
@@ -210,6 +216,16 @@ class galaxy():
         self.sky, self.sky_err = t[7]
         self.error = t[8]
         self.chi2nu = t[9]
+        
+    def write_results(self):
+        self.get_galfit_results()
+        # Write a logfile 
+        logfilename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-log.txt'
+        output=open(logfilename,'a')
+        # create string with best-fit parameters
+        s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(g.xc,g.xc_err,g.yc,g.yc_err,g.mag,g.mag_err)
+        output.write(s)
+        output.close()
 
 def process_list(listname,band,convolution_flag=True,getwise=True):
 
@@ -256,17 +272,7 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
             mygals.initialize_galfit(mynsaid,convflag=1)
             mygals.run_galfit_wise(fitBA=0,fitPA=0)
 
-        # Write a logfile 
-        logfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-log.txt'
-        if os.path.exists(logfilename):
-           os.remove(logfilename)
 
-        output=open(logfilename,'w')
-        output.write('best fit parameters \n')
-        output.close
-        output=open(logfilename,'a')
-        output.write('test \n')
-        output.close
 
         
 
