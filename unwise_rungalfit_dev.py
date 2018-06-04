@@ -232,13 +232,13 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
         # fix these values
         mygals.initialize_galfit(mynsaid,convflag=0)
         mygals.run_galfit_wise(fitBA=1,fitPA=1)
-        galfile = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+mygals.band+'-1Comp-galfit-out.fits'
-        altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+mygals.band+'-1Comp-noconv-fitBAPA-galfit-out.fits'
+        galfile = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-galfit-out.fits'
+        altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-noconv-fitBAPA-galfit-out.fits'
         if os.path.exists(altfilename):
             os.remove(altfilename)
         os.rename(galfile,altfilename)
         mygals.run_galfit_wise(fitBA=0,fitPA=0)
-        altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+mygals.band+'-1Comp-noconv-galfit-out.fits'
+        altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-noconv-galfit-out.fits'
         if os.path.exists(altfilename):
             os.remove(altfilename)
         os.rename(galfile,altfilename)
@@ -255,6 +255,20 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
             mygals.BA = cats.nsa.SERSIC_BA[cats.nsadict[mygals.nsaid]]
             mygals.initialize_galfit(mynsaid,convflag=1)
             mygals.run_galfit_wise(fitBA=0,fitPA=0)
+
+        # Write a logfile 
+        logfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-log.txt'
+        if os.path.exists(logfilename):
+           os.remove(logfilename)
+
+        output=open(logfilename,'w')
+        output.write('best fit parameters \n')
+        output.close
+        output=open(logfilename,'a')
+        output.write('test \n')
+        output.close
+
+        
 
         if pause_flag:
             t = raw_input('hit any key to continue to next galaxy \n \t enter q to quit \n \t enter C to continue without pausing \n')
