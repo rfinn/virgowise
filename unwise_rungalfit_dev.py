@@ -101,11 +101,16 @@ class galaxy():
         self.sigma_image = self.image_rootname+'-std-m.fits'
         self.invvar_image = self.image_rootname+'-invvar-m.fits'
 
-        # add code to remove the log file if it exists
+        # add code to remove the log file if it exists\
+        logfilename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-log.txt'
+        if os.path.exists(logfilename):
+           os.remove(logfilename)
 
         # add code to write the header line into the log file
-
+        output=open(logfilename,'w')
+        output.write('# xc xc_err yc yc_err mag mag_err \n')
         # close log file
+        output.close
 
    def get_wise_image(self):
         galindex = cats.nsadict[self.nsaid]
@@ -223,7 +228,7 @@ class galaxy():
         logfilename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-log.txt'
         output=open(logfilename,'a')
         # create string with best-fit parameters
-        s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(g.xc,g.xc_err,g.yc,g.yc_err,g.mag,g.mag_err)
+        s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err)
         output.write(s)
         output.close()
 
