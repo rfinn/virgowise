@@ -205,7 +205,7 @@ class galaxy():
         #self.gal1.print_galfit_results()
    def get_galfit_results(self,printflag = False):
 
-        self.filename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
+        self.filename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-1Comp-noconv-fitBAPA-galfit-out.fits'
         t = parse_galfit_1comp(self.filename)
         if printflag:
             self.gal1.print_galfit_results(self.filename)
