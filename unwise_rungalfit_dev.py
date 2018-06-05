@@ -274,7 +274,7 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
             # keep PA and BA fixed to NSA values as we did with LCS
             mygals.PA = cats.nsa.SERSIC_PHI[cats.nsadict[mygals.nsaid]]
             mygals.BA = cats.nsa.SERSIC_BA[cats.nsadict[mygals.nsaid]]
-            mygals.initialize_galfit(mynsaid,convflag=1)
+            mygals.initialize_galfit(mynsaid)
             mygals.run_galfit_wise(fitBA=0,fitPA=0)
 
 
