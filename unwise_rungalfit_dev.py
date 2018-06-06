@@ -108,7 +108,7 @@ class galaxy():
 
         # add code to write the header line into the log file
         output=open(logfilename,'w')
-        output.write('# xc xc_err yc yc_err mag mag_err \n')
+        output.write('# xc xc_err yc yc_err mag mag_err re re_err nsersic nsrsic_err BA BA_err PA PA_err sky sky_err error chi2nu \n')
         # close log file
         output.close
 
@@ -178,23 +178,23 @@ class galaxy():
         self.xc, self.yc = w.wcs_world2pix(self.RA, self.DEC,1)
         print self.xc, self.yc
 
-   def set_sersic_params(self):
-        # define first guess sersic parameters for galaxy 
-        #self.xc=50
-        #self.yc=50
-        self.nsersic = 2
-        self.mag = 7
-        self.re = 5
-        self.BA = 1
-        self.PA = 0
-        self.BA = cats.nsa.SERSIC_BA[cats.nsadict[self.nsaid]]
-        self.PA = cats.nsa.SERSIC_PHI[cats.nsadict[self.nsaid]]
 #   def set_sersic_params(self):
- #       self.nsersic = 5.5*np.random.random()+.5
- #       self.mag =14*np.random.random()+2
- #       self.re = 60*np.random.random()
- #       self.BA = np.random.random()
- #       self.PA =181*np.random.random()-89
+#        # define first guess sersic parameters for galaxy 
+#        #self.xc=50
+#        #self.yc=50
+#        self.nsersic = 2
+#        self.mag = 7
+#        self.re = 5
+#        self.BA = 1
+#        self.PA = 0
+#        self.BA = cats.nsa.SERSIC_BA[cats.nsadict[self.nsaid]]
+#        self.PA = cats.nsa.SERSIC_PHI[cats.nsadict[self.nsaid]]
+   def set_sersic_params(self):
+        self.nsersic = 5.5*np.random.random()+.5
+        self.mag =14*np.random.random()+2
+        self.re = 60*np.random.random()
+        self.BA = np.random.random()
+        self.PA =181*np.random.random()-89.0
                 
    def initialize_galfit(self,convflag=True):
         print 'self.psfimage = ',self.psf_image
@@ -234,7 +234,7 @@ class galaxy():
         logfilename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-log.txt'
         output=open(logfilename,'a')
         # create string with best-fit parameters
-        s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err)
+        s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu)
         output.write(s)
         output.close()
 
@@ -284,8 +284,6 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
             mygals.run_galfit_wise(fitBA=0,fitPA=0)
 
 
-
-        
         mygals.write_results()
         if pause_flag:
             t = raw_input('hit any key to continue to next galaxy \n \t enter q to quit \n \t enter C to continue without pausing \n')
@@ -297,26 +295,6 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
     return multiframe
 
 
-########################################################
-    
-#def setup(listname):
-#   for i in listname:
-#      first=galaxy(i)
-#      first.get_wise_image()
-#      first.set_image_names(i)
-#      first.getpix()
-#      first.set_sersic_params()
-#      first.initialize_galfit(i)
-#      first.run_galfit_wise()
-#      first.get_galfit_results()
-#
-#   process_list(listname,band=3,convolution_flag=False,getwise=True)
-
-########################################################
-
-
- 
-                
 
 ############ MAIN PROGRAM ###############
 if __name__ == "__main__":
