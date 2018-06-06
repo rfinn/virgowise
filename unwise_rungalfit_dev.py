@@ -189,7 +189,13 @@ class galaxy():
         self.PA = 0
         self.BA = cats.nsa.SERSIC_BA[cats.nsadict[self.nsaid]]
         self.PA = cats.nsa.SERSIC_PHI[cats.nsadict[self.nsaid]]
-        
+#   def set_sersic_params(self):
+ #       self.nsersic = 5.5*np.random.random()+.5
+ #       self.mag =14*np.random.random()+2
+ #       self.re = 60*np.random.random()
+ #       self.BA = np.random.random()
+ #       self.PA =181*np.random.random()-89
+                
    def initialize_galfit(self,convflag=True):
         print 'self.psfimage = ',self.psf_image
         self.gal1 = galfit(galname=self.image_rootname,image=self.image, mask_image = self.mask_image, sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp,convflag=convflag)
