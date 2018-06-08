@@ -222,7 +222,7 @@ class galaxy():
         output.write(s)
         output.close()
 
-def process_list(listname,band,convolution_flag=True,getwise=True,X=np.array([0,0,0,0,0])):
+def process_list(listname,band,convolution_flag=True,getwise=True,X=np.array([3,8,30,0.5,45])):
 
     pause_flag = True
     multiframe = np.zeros(len(listname),'bool')
@@ -274,7 +274,7 @@ def process_list(listname,band,convolution_flag=True,getwise=True,X=np.array([0,
 
         Xnew=[mygals.nsersic,mygals.mag,mygals.re,mygals.BA,mygals.PA]
 
-        print Xnew
+        print 'The final parameters are ' + str(Xnew)
         
         mygals.write_results()
         if pause_flag:
