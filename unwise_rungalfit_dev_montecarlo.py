@@ -158,16 +158,11 @@ class galaxy():
         ### NEED TO UPDATE MAGZP AND PSCALE FOR UNWISE
         self.magzp=22.5 #For WISE
         self.pscale=0.344 #For WISE
-
-
-
-
         
         #convflag=1 # apply psf convolution
         #constraintflag=1 # add a constraint file?
         #self.fitallflag=0
         self.ncomp=1
-
 
    def getpix(self):
         galindex = cats.nsadict[self.nsaid]
@@ -178,17 +173,6 @@ class galaxy():
         self.xc, self.yc = w.wcs_world2pix(self.RA, self.DEC,1)
         print self.xc, self.yc
 
-#   def set_sersic_params(self):
-#        # define first guess sersic parameters for galaxy 
-#        #self.xc=50
-#        #self.yc=50
-#        self.nsersic = 2
-#        self.mag = 7
-#        self.re = 5
-#        self.BA = 1
-#        self.PA = 0
-#        self.BA = cats.nsa.SERSIC_BA[cats.nsadict[self.nsaid]]
-#        self.PA = cats.nsa.SERSIC_PHI[cats.nsadict[self.nsaid]]
    def set_sersic_params(self):
         self.nsersic = 5.5*np.random.random()+.5
         self.mag =14*np.random.random()+2
@@ -238,7 +222,7 @@ class galaxy():
         output.write(s)
         output.close()
 
-def process_list(listname,band,convolution_flag=True,getwise=True):
+def process_list(listname,band,convolution_flag=True,getwise=True,X=np.array([0,0,0,0,0])):
 
     pause_flag = True
     multiframe = np.zeros(len(listname),'bool')
@@ -254,7 +238,12 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
                 continue
         mygals.set_image_names()
         mygals.getpix()
-        mygals.set_sersic_params()
+        #mygals.set_sersic_params()
+        mygals.nsersic=X[0]
+        mygals.mag=X[1]
+        mygals.re=X[2]
+        mygals.BA=X[3]
+        mygals.PA=X[4]
         # set PA and BA to NSA values
         # fix these values
         mygals.initialize_galfit(convflag=0)
@@ -283,6 +272,9 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
             mygals.initialize_galfit(mynsaid)
             mygals.run_galfit_wise(fitBA=0,fitPA=0)
 
+        Xnew=[mygals.nsersic,mygals.mag,mygals.re,mygals.BA,mygals.PA]
+
+        print Xnew
         
         mygals.write_results()
         if pause_flag:
@@ -292,7 +284,8 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
                 break
             elif t.find('C') > -1:
                 pause_flag = False
-    return multiframe
+    return multiframe, Xnew
+    #return Xnew
 
 
 
