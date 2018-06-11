@@ -134,7 +134,7 @@ class galaxy():
            t = fname.split('-')
            self.rename = 'NSA-'+str(self.nsaid)+'-'+t[0]+'-'+t[2]+'-'+t[3]+'-'+t[4]
 
-           print self.rename
+           #print self.rename
            if os.path.exists(self.rename): # this should only occur if multiple images are returned from wise
                os.remove(self.rename)
            os.rename(fname, self.rename)
@@ -195,7 +195,7 @@ class galaxy():
         #self.gal1.print_galfit_results()
    def get_galfit_results(self,printflag = False):
 
-        self.filename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-1Comp-noconv-fitBAPA-galfit-out.fits'
+        self.filename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
         t = parse_galfit_1comp(self.filename)
         if printflag:
             self.gal1.print_galfit_results(self.filename)
@@ -248,35 +248,34 @@ def process_list(listname,band,convolution_flag=True,getwise=True,X=np.array([3,
         # fix these values
         mygals.initialize_galfit(convflag=0)
         mygals.run_galfit_wise(fitBA=1,fitPA=1)
-        galfile = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-galfit-out.fits'
-        altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-noconv-fitBAPA-galfit-out.fits'
-        if os.path.exists(altfilename):
-            os.remove(altfilename)
-        os.rename(galfile,altfilename)
-        mygals.run_galfit_wise(fitBA=0,fitPA=0)
-        altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-noconv-galfit-out.fits'
-        if os.path.exists(altfilename):
-            os.remove(altfilename)
-        os.rename(galfile,altfilename)
+        #galfile = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-galfit-out.fits'
+        #altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-noconv-fitBAPA-galfit-out.fits'
+        #if os.path.exists(altfilename):
+        #    os.remove(altfilename)
+        #os.rename(galfile,altfilename)
+        #mygals.run_galfit_wise(fitBA=0,fitPA=0)
+        #altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-noconv-galfit-out.fits'
+        #if os.path.exists(altfilename):
+        #    os.remove(altfilename)
+        #os.rename(galfile,altfilename)
         # get output from no convolution - use mag and Re as input with convolution
 
         # skipping convolution for now
         # something is not set right
         # might be the oversampling number
-        if convolution_flag:
-            mygals.get_galfit_results()
-            
+        #if convolution_flag:
+        #    mygals.get_galfit_results()
+        #    
             # keep PA and BA fixed to NSA values as we did with LCS
-            mygals.PA = cats.nsa.SERSIC_PHI[cats.nsadict[mygals.nsaid]]
-            mygals.BA = cats.nsa.SERSIC_BA[cats.nsadict[mygals.nsaid]]
-            mygals.initialize_galfit(mynsaid)
-            mygals.run_galfit_wise(fitBA=0,fitPA=0)
-
-        Xnew=[mygals.nsersic,mygals.mag,mygals.re,mygals.BA,mygals.PA]
-
+        #    mygals.PA = cats.nsa.SERSIC_PHI[cats.nsadict[mygals.nsaid]]
+        #    mygals.BA = cats.nsa.SERSIC_BA[cats.nsadict[mygals.nsaid]]
+        #    mygals.initialize_galfit(mynsaid)
+        #    mygals.run_galfit_wise(fitBA=0,fitPA=0)
+        mygals.get_galfit_results()
+        Xnew=[mygals.xc,mygals.yc,mygals.nsersic,mygals.mag,mygals.re,mygals.BA,mygals.PA]
         print 'The final parameters are ' + str(Xnew)
         
-        mygals.write_results()
+        #mygals.write_results()
         if pause_flag:
             t = raw_input('hit any key to continue to next galaxy \n \t enter q to quit \n \t enter C to continue without pausing \n')
 
@@ -315,3 +314,4 @@ if __name__ == "__main__":
     #mygals.get_wise_image(mygals.nsa.NSAID[galaxy_index[0]])
 
     
+#[50.7928, 51.711, 0.7149, 8.0206, 6.4839, 0.20842358, 117.2778]
