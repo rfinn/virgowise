@@ -283,8 +283,8 @@ def process_list(listname,band,convolution_flag=True,getwise=True,X=np.array([3,
                 break
             elif t.find('C') > -1:
                 pause_flag = False
-    return multiframe, Xnew
-    #return Xnew
+    #return multiframe, Xnew
+    return Xnew
 
 
 
@@ -314,4 +314,3 @@ if __name__ == "__main__":
     #mygals.get_wise_image(mygals.nsa.NSAID[galaxy_index[0]])
 
     
-#[50.7928, 51.711, 0.7149, 8.0206, 6.4839, 0.20842358, 117.2778]
