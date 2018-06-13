@@ -223,7 +223,7 @@ class galaxy():
                 
    def initialize_galfit(self,convflag=True):
         '''
-        GOAL: Preparing file to be run in galfit
+        GOAL: Preparing file to be run in galfit. Initialize galfit image parameters 
 
         INPUT: nsaid 
 
@@ -308,19 +308,25 @@ class galaxy():
         # Number of random samples
         N = 10
         # set up arrays to store galfit output (e.g. xf, yf, rf, etc)
-        xf = np.zeros(N,'f')
+        xcf = np.zeros(N,'f')
+        ycf = np.zeros(N,'f')
+        ref = np.zeros(N,'f')
+        magf = np.zeros(N,'f')
+        nsersicf = np.zeros(N,'f')
+        BAf = np.zeros(N,'f')
+        PAf = np.zeros(N,'f')
 
         # get wise image
-
+        get_wise_image()
         # set image names
-
+        set_image_names()
         # get pixel coordinates of galaxy
-
+        getpix()
         # initialize galfit image parameters
-        
+        initialize_galfit()
         # start a loop, n=10
         for i in np.range(N):
-        
+            
         # set input parameters for galfit model
 
         # run galfit
