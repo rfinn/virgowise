@@ -124,9 +124,9 @@ class galaxy():
         '''
         GOAL: Get the unWISE image through the unWISE catalog
 
-        INPUT: nsaid used to grab unwise image  
+        INPUT: nsaid used to grab unwise image information
 
-        OUTPUT: Name of file to retrieve from?
+        OUTPUT: Name of file to retrieve from
 
         '''
 
@@ -223,11 +223,11 @@ class galaxy():
                 
    def initialize_galfit(self,convflag=True):
         '''
-        GOAL:  
+        GOAL: Preparing file to be run in galfit
 
         INPUT: nsaid 
 
-        OUTPUT: 
+        OUTPUT: A definition of everything from galname to convflag, necessary for running galfit
 
         '''
         print 'self.psfimage = ',self.psf_image
