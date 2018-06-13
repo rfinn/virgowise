@@ -62,7 +62,7 @@ parser.add_argument('--getwise',dest = 'getwise', default =False, help = 'downlo
 
 #os.sys.path.append('~/github/Virgo/programs/')
 os.sys.path.append('/Users/rfinn/github/virgowise/')
-from rungalfit import * #This code has all the defined functions that I can use
+from rungalfit import rg #This code has all the defined functions that I can use
 
 
 
@@ -88,9 +88,18 @@ class catalogs():
        self.co_flag = self.co.COdetected == '1'
        self.sampleflag = self.w3_flag & self.w4_flag & self.co_flag
        print 'number of galaxies in sample = ',sum(self.sampleflag)
+
        
 class galaxy():
    def __init__(self,nsaid,band='3'):
+        '''
+        GOAL: Make 4 fits files, create a logfile and a header for it 
+
+        INPUT: nsaids, band 
+
+        OUTPUT: fits files for images/error
+
+        '''
         print 'hello galaxy NSA ',nsaid
         self.nsaid = nsaid
         self.band = band
@@ -112,6 +121,15 @@ class galaxy():
         output.close
 
    def get_wise_image(self):
+        '''
+        GOAL: Get the unWISE image through the unWISE catalog
+
+        INPUT: nsaid used to grab unwise image  
+
+        OUTPUT: Name of file to retrieve from?
+
+        '''
+
         galindex = cats.nsadict[self.nsaid]
         baseurl = 'http://unwise.me/cutout_fits?version=allwise'
         imsize = '100'
@@ -145,6 +163,14 @@ class galaxy():
         print 'self.rename = ',self.rename
     
    def set_image_names(self):
+        '''
+        GOAL: Set the image values for use later, psf image name
+
+        INPUT: nsaid as self
+
+        OUTPUT: PSF image and optional diffusion kernel, other parameters  
+
+        '''
         self.psf_image = 'wise-w3-psf-wpro-09x09-05x05.fits' #just using center til, doesn't matter usually
         self.psf_oversampling = 8
         #mask_image = 'testimage_mask.fits' no mask image 
@@ -164,6 +190,14 @@ class galaxy():
         self.ncomp=1
 
    def getpix(self):
+        '''
+        GOAL: Get pixel values from nsa catalog RA/Dec Values
+
+        INPUT: nsaid
+        
+        OUTPUT: xc, yc in pixels
+
+        '''
         galindex = cats.nsadict[self.nsaid]
         self.RA = cats.nsa.RA[galindex]
         self.DEC = cats.nsa.DEC[galindex]
@@ -173,6 +207,14 @@ class galaxy():
         print self.xc, self.yc
 
    def set_sersic_params(self):
+        '''
+        GOAL: Set random parameters for galfit
+
+        INPUT: nsaid
+
+        OUTPUT: 5 random parameters for nsersic, magnitude, effective radius, axis ratio, and position angle
+
+        '''
         self.nsersic = 5.5*np.random.random()+.5
         self.mag =14*np.random.random()+2
         self.re = 60*np.random.random()
@@ -180,10 +222,27 @@ class galaxy():
         self.PA =181*np.random.random()-89.0
                 
    def initialize_galfit(self,convflag=True):
+        '''
+        GOAL:  
+
+        INPUT: nsaid 
+
+        OUTPUT: 
+
+        '''
         print 'self.psfimage = ',self.psf_image
-        self.gal1 = galfit(galname=self.image_rootname,image=self.image, mask_image = self.mask_image, sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp,convflag=convflag)
+        
+        self.gal1 = rg.galfit(galname=self.image_rootname,image=self.image, mask_image = self.mask_image, sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp,convflag=convflag)
         
    def run_galfit_wise(self,fitBA=1,fitPA=1):
+        '''
+        GOAL: take values from NSA tables in /Virgo 
+
+        INPUT: nsaid, ba/pa = 1
+
+        OUTPUT: several output files
+
+        '''
         os.system('cp '+args.virgopath+'wisepsf/'+self.psf_image+' .')
         self.gal1.set_sersic_params(xobj=self.xc,yobj=self.yc,mag=self.mag,rad=self.re,nsersic=self.nsersic,BA=self.BA,PA=self.PA,fitmag=1,fitcenter=1,fitrad=1,fitBA=fitBA,fitPA=fitPA,fitn=1,first_time=0)
         self.gal1.set_sky(0)
@@ -193,6 +252,14 @@ class galaxy():
         #self.gal1.print_params()
         #self.gal1.print_galfit_results()
    def get_galfit_results(self,printflag = False):
+        '''
+        GOAL: Grab results from galfit (xc, yc, mag, re, nsersic, BA, PA, sky, error, chi2nu) and parse them into self.filename
+
+        INPUT: nsaid
+
+        OUTPUT: 1Comp file of output from galfit, header for the output file
+
+        '''
 
         self.filename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
         t = parse_galfit_1comp(self.filename)
@@ -212,6 +279,14 @@ class galaxy():
         self.chi2nu = t[9]
         
    def write_results(self):
+        '''
+        GOAL: Put results from galfit into a logfile by appending values
+
+        INPUT: nsaid
+
+        OUTPUT: logfile of parameter types and their associated outputs from galfit 
+
+        '''
         self.get_galfit_results()
         # Write a logfile 
         logfilename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-log.txt'
@@ -220,75 +295,43 @@ class galaxy():
         s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu)
         output.write(s)
         output.close()
-######################        
-
-
-########################
-def process_list(listname,band,convolution_flag=True,getwise=True,X=np.array([3,8,30,0.5,45])):
-
-    pause_flag = True
-    multiframe = np.zeros(len(listname),'bool')
-    i=-1
-    for mynsaid in listname:
-        i += 1
-        mygals = galaxy(mynsaid,band=band)
-        if getwise:
-            mygals.get_wise_image()
-            multiframe[i] = mygals.multiframe
-            if mygals.multiframe:
-                print '\n NSA ',mynsaid,' is on multiple frames - skipping for now \n \ntarf'
-                continue
-        mygals.set_image_names()
-        mygals.getpix()
-        #mygals.set_sersic_params()
-        mygals.nsersic=X[0]
-        mygals.mag=X[1]
-        mygals.re=X[2]
-        mygals.BA=X[3]
-        mygals.PA=X[4]
-        # set PA and BA to NSA values
-        # fix these values
-        mygals.initialize_galfit(convflag=0)
-        mygals.run_galfit_wise(fitBA=1,fitPA=1)
-        #galfile = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-galfit-out.fits'
-        #altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-noconv-fitBAPA-galfit-out.fits'
-        #if os.path.exists(altfilename):
-        #    os.remove(altfilename)
-        #os.rename(galfile,altfilename)
-        #mygals.run_galfit_wise(fitBA=0,fitPA=0)
-        #altfilename = 'NSA-'+str(mygals.nsaid)+'-unwise-'+'w'+str(mygals.band)+'-1Comp-noconv-galfit-out.fits'
-        #if os.path.exists(altfilename):
-        #    os.remove(altfilename)
-        #os.rename(galfile,altfilename)
-        # get output from no convolution - use mag and Re as input with convolution
-
-        # skipping convolution for now
-        # something is not set right
-        # might be the oversampling number
-        #if convolution_flag:
-        #    mygals.get_galfit_results()
-        #    
-            # keep PA and BA fixed to NSA values as we did with LCS
-        #    mygals.PA = cats.nsa.SERSIC_PHI[cats.nsadict[mygals.nsaid]]
-        #    mygals.BA = cats.nsa.SERSIC_BA[cats.nsadict[mygals.nsaid]]
-        #    mygals.initialize_galfit(mynsaid)
-        #    mygals.run_galfit_wise(fitBA=0,fitPA=0)
-        mygals.get_galfit_results()
-        Xnew=[mygals.xc,mygals.yc,mygals.nsersic,mygals.mag,mygals.re,mygals.BA,mygals.PA]
-        print 'The final parameters are ' + str(Xnew)
         
-        #mygals.write_results()
-        if pause_flag:
-            t = raw_input('hit any key to continue to next galaxy \n \t enter q to quit \n \t enter C to continue without pausing \n')
+   def run_dmc(self):
+       '''
+       GOAL: Run galfit with monte carlo sampling to find all minima
 
-            if t.find('q') > -1:
-                break
-            elif t.find('C') > -1:
-                pause_flag = False
-    return multiframe, Xnew
-newstuff()
-    #return Xnew
-################
+       INPUT: nsaid
+
+       OUTPUT: All possible minima
+
+       '''
+        # Number of random samples
+        N = 10
+        # set up arrays to store galfit output (e.g. xf, yf, rf, etc)
+        xf = np.zeros(N,'f')
+
+        # get wise image
+
+        # set image names
+
+        # get pixel coordinates of galaxy
+
+        # initialize galfit image parameters
+        
+        # start a loop, n=10
+        for i in np.range(N):
+        
+        # set input parameters for galfit model
+
+        # run galfit
+
+        # get galfit results
+
+        # store the results in arrays (e.g. xf, yf, rf, etc)
+        
+
+
+
 
 ############ MAIN PROGRAM ###############
 if __name__ == "__main__":
@@ -316,4 +359,3 @@ if __name__ == "__main__":
     #mygals.get_wise_image(mygals.nsa.NSAID[galaxy_index[0]])
 
     
-#[50.7928, 51.711, 0.7149, 8.0206, 6.4839, 0.20842358, 117.2778]
