@@ -200,7 +200,7 @@ class galfit:
         self.galfit_input.write(" Z) 0                  # Output option (0 = residual, 1 = Don't subtract)  \n")
 
 
-    def run_galfit(self):
+    def run_galfit(self,displayflag=False):
         #print 'self.fitall = ',self.fitall
         self.create_output_names()
         self.open_galfit_input()
@@ -244,7 +244,8 @@ class galfit:
             #galflag[j]=0
             self.galfit_flag=0
             return
-        self.display_results()
+        if displayflag:
+            self.display_results()
 
     def display_results(self):
         print '%%%%%%%%%%%%%%%%%%'
