@@ -88,7 +88,6 @@ class catalogs():
        self.co_flag = self.co.COdetected == '1'
        self.sampleflag = self.w3_flag & self.w4_flag & self.co_flag
        print 'number of galaxies in sample = ',sum(self.sampleflag)
-
        
 class galaxy():
    def __init__(self,nsaid,band='3'):
@@ -221,7 +220,10 @@ class galaxy():
         s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu)
         output.write(s)
         output.close()
+######################        
 
+
+########################
 def process_list(listname,band,convolution_flag=True,getwise=True,X=np.array([3,8,30,0.5,45])):
 
     pause_flag = True
@@ -284,9 +286,9 @@ def process_list(listname,band,convolution_flag=True,getwise=True,X=np.array([3,
             elif t.find('C') > -1:
                 pause_flag = False
     return multiframe, Xnew
+newstuff()
     #return Xnew
-
-
+################
 
 ############ MAIN PROGRAM ###############
 if __name__ == "__main__":
