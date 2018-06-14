@@ -320,18 +320,17 @@ class galaxy():
       # initialize galfit image parameters
       self.initialize_galfit()
       # start a loop, n=10
-      for i in np.range(N):
+      for i in np.arange(N):
           # select random initial conditions  (set_sersic_params)
-
+          self.set_sersic_params()
           # run galfit_wise
-
+          self.run_galfit_wise(fitBA=1,fitPA=1)
           # get output
-
+          self.get_galfit_results()
           # append best-fit values to array
+          X.append([self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA])
           
-          #X.append([xc,yc,...])
-          
-      #self.X = np.zeros((len(xcf),7))
+      #self.X = np.zeros((len(xcf),5))
       #self.X[:,0] = xcf
 
       
