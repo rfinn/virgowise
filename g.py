@@ -62,7 +62,7 @@ parser.add_argument('--getwise',dest = 'getwise', default =False, help = 'downlo
 
 #os.sys.path.append('~/github/Virgo/programs/')
 os.sys.path.append('/Users/rfinn/github/virgowise/')
-from rungalfit import rg #This code has all the defined functions that I can use
+import rungalfit as rg #This code has all the defined functions that I can use
 
 
 
@@ -295,50 +295,49 @@ class galaxy():
         s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu)
         output.write(s)
         output.close()
-        
+
    def run_dmc(self):
-       '''
-       GOAL: Run galfit with monte carlo sampling to find all minima
+      
+      '''
+      GOAL: Run galfit with monte carlo sampling to find all minima
 
-       INPUT: nsaid
+      INPUT: nsaid
 
-       OUTPUT: All possible minima
+      OUTPUT: All possible minima
 
-       '''
-        # Number of random samples
-        N = 10
-        # set up arrays to store galfit output (e.g. xf, yf, rf, etc)
-        xcf = np.zeros(N,'f')
-        ycf = np.zeros(N,'f')
-        ref = np.zeros(N,'f')
-        magf = np.zeros(N,'f')
-        nsersicf = np.zeros(N,'f')
-        BAf = np.zeros(N,'f')
-        PAf = np.zeros(N,'f')
-
-        # get wise image
-        get_wise_image()
-        # set image names
-        set_image_names()
-        # get pixel coordinates of galaxy
-        getpix()
-        # initialize galfit image parameters
-        initialize_galfit()
-        # start a loop, n=10
-        for i in np.range(N):
-            
-        # set input parameters for galfit model
-
-        # run galfit
-
-        # get galfit results
-
-        # store the results in arrays (e.g. xf, yf, rf, etc)
+      '''
+      #g = galaxy(2473)
+      # Number of random samples
+      N = 10
+      # set up arrays to store galfit output (e.g. xf, yf, rf, etc)
+      xcf = np.zeros(N,'f')
+      ycf = np.zeros(N,'f')
+      ref = np.zeros(N,'f')
+      magf = np.zeros(N,'f')
+      nsersicf = np.zeros(N,'f')
+      BAf = np.zeros(N,'f')
+      PAf = np.zeros(N,'f')     
+      # get wise image
+      self.get_wise_image()
+      # set image names
+      self.set_image_names()
+      # get pixel coordinates of galaxy
+      self.getpix()
+      # initialize galfit image parameters
+      self.initialize_galfit()
+      # start a loop, n=10
+      #for i in np.range(N):
+      #xcf.np.append(self.xc)
+      print xcf
+      return xcf
+      # set input parameters for galfit model
         
+      # run galfit
 
+      # get galfit results
 
-
-
+      # store the results in arrays (e.g. xf, yf, rf, etc)
+          
 ############ MAIN PROGRAM ###############
 if __name__ == "__main__":
     
