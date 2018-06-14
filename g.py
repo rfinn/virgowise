@@ -310,13 +310,7 @@ class galaxy():
       # Number of random samples
       N = 10
       # set up arrays to store galfit output (e.g. xf, yf, rf, etc)
-      xcf = np.zeros(N,'f')
-      ycf = np.zeros(N,'f')
-      ref = np.zeros(N,'f')
-      magf = np.zeros(N,'f')
-      nsersicf = np.zeros(N,'f')
-      BAf = np.zeros(N,'f')
-      PAf = np.zeros(N,'f')     
+      X = []
       # get wise image
       self.get_wise_image()
       # set image names
@@ -326,10 +320,21 @@ class galaxy():
       # initialize galfit image parameters
       self.initialize_galfit()
       # start a loop, n=10
-      #for i in np.range(N):
-      #xcf.np.append(self.xc)
-      print xcf
-      return xcf
+      for i in np.range(N):
+          # select random initial conditions  (set_sersic_params)
+
+          # run galfit_wise
+
+          # get output
+
+          # append best-fit values to array
+          
+          #X.append([xc,yc,...])
+          
+      #self.X = np.zeros((len(xcf),7))
+      #self.X[:,0] = xcf
+
+      
       # set input parameters for galfit model
         
       # run galfit
