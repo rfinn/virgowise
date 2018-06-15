@@ -202,9 +202,9 @@ class galaxy():
         self.RA = cats.nsa.RA[galindex]
         self.DEC = cats.nsa.DEC[galindex]
         w=wcs.WCS(self.image)
-        print self.RA, self.DEC
+        #print self.RA, self.DEC
         self.xc, self.yc = w.wcs_world2pix(self.RA, self.DEC,1)
-        print self.xc, self.yc
+        #print self.xc, self.yc
 
    def set_sersic_params(self):
         '''
@@ -262,7 +262,7 @@ class galaxy():
         '''
 
         self.filename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
-        t = parse_galfit_1comp(self.filename)
+        t = rg.parse_galfit_1comp(self.filename)
         if printflag:
             self.gal1.print_galfit_results(self.filename)
         
@@ -321,15 +321,20 @@ class galaxy():
       self.initialize_galfit()
       # start a loop, n=10
       for i in np.arange(N):
-          # select random initial conditions  (set_sersic_params)
-          self.set_sersic_params()
-          # run galfit_wise
-          self.run_galfit_wise(fitBA=1,fitPA=1)
-          # get output
-          self.get_galfit_results()
-          # append best-fit values to array
+          E = 100000 #
+          while(np.random.random()>= np.exp(-B*E)): #
+             nQ = len(Q)#
+             D = np.array()#             
+      # select random initial conditions  (set_sersic_params)
+             self.set_sersic_params()
+      # run galfit_wise
+             self.run_galfit_wise(fitBA=1,fitPA=1)
+      # get output
+             self.get_galfit_results()
+      # append best-fit values to array
           X.append([self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA])
-          
+      #print np.shape(X)
+      return X
       #self.X = np.zeros((len(xcf),5))
       #self.X[:,0] = xcf
 
