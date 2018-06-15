@@ -322,9 +322,11 @@ class galaxy():
       # start a loop, n=10
       for i in np.arange(N):
           E = 100000 #
+          B=1
+          Q=[[]]
           while(np.random.random()>= np.exp(-B*E)): #
              nQ = len(Q)#
-             D = np.array()#             
+             D = np.array([])#             
       # select random initial conditions  (set_sersic_params)
              self.set_sersic_params()
       # run galfit_wise
