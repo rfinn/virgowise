@@ -310,7 +310,8 @@ class galaxy():
       # Number of random samples
       N = 10
       # set up arrays to store galfit output (e.g. xf, yf, rf, etc)
-      X = []
+      X = np.empty((0,7))
+      #X=np.array([[]])
       # get wise image
       self.get_wise_image()
       # set image names
@@ -320,34 +321,36 @@ class galaxy():
       # initialize galfit image parameters
       self.initialize_galfit()
       # start a loop, n=10
-      for i in np.arange(N):
-          E = 3 
-          B=1
-          #Q=[[]]
+      B = 1
+      for i in range(N):
+          E = 100000 
           while(np.random.random()>= np.exp(-B*E)): 
              nX = len(X)
-             D = np.array([])             
+             # print nX
+             # print i
+             D = np.zeros((1,7))             
       # select random initial conditions  (set_sersic_params)
              self.set_sersic_params()
              #Set X0 = something here?
-             #X0 = [self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]
-      # run galfit_wise
-             self.run_galfit_wise(fitBA=1,fitPA=1)
-      # get output
-             self.get_galfit_results()
-             #for k in np.arange(nX-1):
-             #    R = X0-X[k,:]
-             #    R5 = np.norm(R)**5
-             #    deltaD = R/R5
-             #    D = D+deltaD
-             #    E = np.norm(D)**2
-      # append best-fit values to array
-          X.append([self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA])
-      #print np.shape(X)
+             X0 = np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])
+             for k in range(nX-1):
+                 R = X0-X[k,:]
+                 R7 = np.linalg.norm(R)**7
+                 deltaD = R/R7
+                 D = D+deltaD
+             E = np.linalg.norm(D)**2
+          self.run_galfit_wise(fitBA=1,fitPA=1)
+          self.get_galfit_results()
+      # append best-fit values to array          
+          Qnew=np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])                    
+          X = np.append(X,Qnew,axis=0)
+      print np.mean(X,axis=0)    
+      print np.std(X,axis=0)
       return X
       #self.X = np.zeros((len(xcf),5))
       #self.X[:,0] = xcf
-
+      #if galfit converges, append to X
+      #find out how galfit reports not convereging w dr finn
       
       # set input parameters for galfit model
         
