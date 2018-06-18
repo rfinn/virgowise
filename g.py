@@ -321,24 +321,26 @@ class galaxy():
       self.initialize_galfit()
       # start a loop, n=10
       for i in np.arange(N):
-          E = 100000 
+          E = 3 
           B=1
-          Q=[[]]
+          #Q=[[]]
           while(np.random.random()>= np.exp(-B*E)): 
              nX = len(X)
              D = np.array([])             
       # select random initial conditions  (set_sersic_params)
              self.set_sersic_params()
+             #Set X0 = something here?
+             #X0 = [self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]
       # run galfit_wise
              self.run_galfit_wise(fitBA=1,fitPA=1)
       # get output
              self.get_galfit_results()
-            # for k in np.arange(nX-1):
-            #     R = X0-Q[k,:]
-            #     R5 = np.norm(R)**5
-            #     deltaD = R/R5
-            #     D = D+deltaD
-            #     E = np.norm(D)**2
+             #for k in np.arange(nX-1):
+             #    R = X0-X[k,:]
+             #    R5 = np.norm(R)**5
+             #    deltaD = R/R5
+             #    D = D+deltaD
+             #    E = np.norm(D)**2
       # append best-fit values to array
           X.append([self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA])
       #print np.shape(X)
