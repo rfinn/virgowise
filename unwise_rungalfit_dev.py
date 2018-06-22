@@ -228,6 +228,7 @@ class galaxy():
         self.error = t[8]
         self.chi2nu = t[9]
         
+                
    def write_results(self):
         self.get_galfit_results()
         # Write a logfile 
@@ -282,8 +283,9 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
             mygals.BA = cats.nsa.SERSIC_BA[cats.nsadict[mygals.nsaid]]
             mygals.initialize_galfit(mynsaid)
             mygals.run_galfit_wise(fitBA=0,fitPA=0)
+        if mygals.error>0: ###############Stops the program if galfit has a convergence issue
+           break
 
-        
         mygals.write_results()
         if pause_flag:
             t = raw_input('hit any key to continue to next galaxy \n \t enter q to quit \n \t enter C to continue without pausing \n')
