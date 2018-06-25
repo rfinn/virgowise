@@ -83,8 +83,8 @@ class catalogs():
        self.nsadict=dict((a,b) for a,b in zip(self.nsa.NSAID,np.arange(len(self.nsa.NSAID)))) #useful for us can easily look up galaxy ID's       
    def define_sample(self):
        #self.sampleflag = (self.wise.W3SNR>10) & (self.co.CO_DETECT==1)   
-       self.w3_flag = self.wise.W3SNR>10 
-       self.w4_flag = self.wise.W4SNR>5      
+       self.w3_flag = self.wise.W3SNR<5 #was >10
+       self.w4_flag = self.wise.W4SNR<3  #was >5    
        self.co_flag = self.co.COdetected == '1'
        self.sampleflag = self.w3_flag & self.w4_flag & self.co_flag
        print 'number of galaxies in sample = ',sum(self.sampleflag)
@@ -311,6 +311,7 @@ class galaxy():
       N = 10
       # set up arrays to store galfit output (e.g. xf, yf, rf, etc)
       X = np.empty((0,7))
+      Y = np.empty((0,7))
       #X=np.array([[]])
       # get wise image
       self.get_wise_image()
@@ -342,10 +343,14 @@ class galaxy():
           self.run_galfit_wise(fitBA=1,fitPA=1)
           self.get_galfit_results()
       # append best-fit values to array          
-          Qnew=np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])                    
-          X = np.append(X,Qnew,axis=0)
-      print np.mean(X,axis=0)    
-      print np.std(X,axis=0)
+          Qnew=np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])
+          if self.error>0:
+             Y = np.append(Y,Qnew,axis=0)
+          else:
+             X = np.append(X,Qnew,axis=0)         
+      #print np.mean(X,axis=0)    
+      #print np.std(X,axis=0)
+      print Y
       return X
       #self.X = np.zeros((len(xcf),5))
       #self.X[:,0] = xcf
