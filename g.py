@@ -83,8 +83,8 @@ class catalogs():
        self.nsadict=dict((a,b) for a,b in zip(self.nsa.NSAID,np.arange(len(self.nsa.NSAID)))) #useful for us can easily look up galaxy ID's       
    def define_sample(self):
        #self.sampleflag = (self.wise.W3SNR>10) & (self.co.CO_DETECT==1)   
-       self.w3_flag = self.wise.W3SNR<5 #was >10
-       self.w4_flag = self.wise.W4SNR<3  #was >5    
+       self.w3_flag = self.wise.W3SNR>10 #was >10
+       self.w4_flag = self.wise.W4SNR>5  #was >5    
        self.co_flag = self.co.COdetected == '1'
        self.sampleflag = self.w3_flag & self.w4_flag & self.co_flag
        print 'number of galaxies in sample = ',sum(self.sampleflag)
@@ -311,7 +311,9 @@ class galaxy():
       N = 10
       # set up arrays to store galfit output (e.g. xf, yf, rf, etc)
       X = np.empty((0,7))
-      Y = np.empty((0,7))
+      dX = np.empty((0,7))
+      C = np.empty((0))
+      #create list C (charge) with one vector,just column (not array)                
       #X=np.array([[]])
       # get wise image
       self.get_wise_image()
@@ -333,25 +335,50 @@ class galaxy():
       # select random initial conditions  (set_sersic_params)
              self.set_sersic_params()
              #Set X0 = something here?
-             X0 = np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])
+             X0 = np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])             
              for k in range(nX-1):
                  R = X0-X[k,:]
                  R7 = np.linalg.norm(R)**7
-                 deltaD = R/R7
+                 deltaD = C[k]*R/R7
                  D = D+deltaD
              E = np.linalg.norm(D)**2
           self.run_galfit_wise(fitBA=1,fitPA=1)
           self.get_galfit_results()
       # append best-fit values to array          
           Qnew=np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])
-          if self.error>0:
-             Y = np.append(Y,Qnew,axis=0)
-          else:
-             X = np.append(X,Qnew,axis=0)         
+          dQnew = np.array([[self.xc_err,self.yc_err,self.mag_err,self.re_err,self.nsersic_err,self.BA_err,self.PA_err]])
+          #if self.error>0:
+          #   Y = np.append(Y,Qnew,axis=0)
+          #else:
+          #   X = np.append(X,Qnew,axis=0)
+          
+
+       # New charge, to evaluate position
+
+          flag=0    # the flag is 0 if it does not overlap the list of charges
+                         # the flag is 1 is it overlaps some other charge
+          for j in range(nX):
+              if (np.linalg.norm(Qnew-X[j,:])<= np.linalg.norm(dQnew+dX[j,:]) ):
+           #    overlaps
+                  flag=1
+                  C[j]=C[j]+1
+                  if np.linalg.norm(dQnew)<np.linalg.norm(dX[j,:]):
+                     X[j,:]=Qnew
+                     dX[j,:]=dQnew
+                  break
+
+          if flag==0: # if it does not overlap, then add it to the list
+              X=np.append(X,Qnew,axis=0)
+              dX=np.append(dX,dQnew,axis=0)
+              C = np.append(C,[1],axis=0)
+          
+             
+      return X
+
       #print np.mean(X,axis=0)    
       #print np.std(X,axis=0)
-      print Y
-      return X
+      #print Y
+      #return X
       #self.X = np.zeros((len(xcf),5))
       #self.X[:,0] = xcf
       #if galfit converges, append to X
