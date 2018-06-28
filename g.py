@@ -306,35 +306,22 @@ class galaxy():
       OUTPUT: All possible minima
 
       '''
-      #g = galaxy(2473)
-      # Number of random samples
-      N = 10
+      N = 100 # Number of random samples
       # set up arrays to store galfit output (e.g. xf, yf, rf, etc)
       X = np.empty((0,7))
       dX = np.empty((0,7))
-      C = np.empty((0))
-      #create list C (charge) with one vector,just column (not array)                
-      #X=np.array([[]])
-      # get wise image
+      C = np.empty((0)) #create list C (charge) with one vector (not array)                
       self.get_wise_image()
-      # set image names
       self.set_image_names()
-      # get pixel coordinates of galaxy
       self.getpix()
-      # initialize galfit image parameters
       self.initialize_galfit()
-      # start a loop, n=10
       B = 1
       for i in range(N):
           E = 100000 
           while(np.random.random()>= np.exp(-B*E)): 
              nX = len(X)
-             # print nX
-             # print i
              D = np.zeros((1,7))             
-      # select random initial conditions  (set_sersic_params)
-             self.set_sersic_params()
-             #Set X0 = something here?
+             self.set_sersic_params() # select random initial conditions
              X0 = np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])             
              for k in range(nX-1):
                  R = X0-X[k,:]
@@ -344,22 +331,15 @@ class galaxy():
              E = np.linalg.norm(D)**2
           self.run_galfit_wise(fitBA=1,fitPA=1)
           self.get_galfit_results()
-      # append best-fit values to array          
+          # append best-fit values and errors to array         
           Qnew=np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])
           dQnew = np.array([[self.xc_err,self.yc_err,self.mag_err,self.re_err,self.nsersic_err,self.BA_err,self.PA_err]])
-          #if self.error>0:
-          #   Y = np.append(Y,Qnew,axis=0)
-          #else:
-          #   X = np.append(X,Qnew,axis=0)
-          
-
-       # New charge, to evaluate position
 
           flag=0    # the flag is 0 if it does not overlap the list of charges
                          # the flag is 1 is it overlaps some other charge
           for j in range(nX):
-              if (np.linalg.norm(Qnew-X[j,:])<= np.linalg.norm(dQnew+dX[j,:]) ):
-           #    overlaps
+              if (np.linalg.norm(Qnew-X[j,:])<= np.linalg.norm(dQnew+dX[j,:])):
+                  # overlaps
                   flag=1
                   C[j]=C[j]+1
                   if np.linalg.norm(dQnew)<np.linalg.norm(dX[j,:]):
@@ -372,26 +352,11 @@ class galaxy():
                   X=np.append(X,Qnew,axis=0)
                   dX=np.append(dX,dQnew,axis=0)
                   C = np.append(C,[1],axis=0)
-          
-             
-      return X
-
       #print np.mean(X,axis=0)    
       #print np.std(X,axis=0)
-      #print Y
-      #return X
-      #self.X = np.zeros((len(xcf),5))
-      #self.X[:,0] = xcf
-      #if galfit converges, append to X
-      #find out how galfit reports not convereging w dr finn
-      
-      # set input parameters for galfit model
-        
-      # run galfit
+      return X    
+             
 
-      # get galfit results
-
-      # store the results in arrays (e.g. xf, yf, rf, etc)
           
 ############ MAIN PROGRAM ###############
 if __name__ == "__main__":
