@@ -368,9 +368,10 @@ class galaxy():
                   break
 
           if flag==0: # if it does not overlap, then add it to the list
-              X=np.append(X,Qnew,axis=0)
-              dX=np.append(dX,dQnew,axis=0)
-              C = np.append(C,[1],axis=0)
+              if self.error==0:
+                  X=np.append(X,Qnew,axis=0)
+                  dX=np.append(dX,dQnew,axis=0)
+                  C = np.append(C,[1],axis=0)
           
              
       return X
