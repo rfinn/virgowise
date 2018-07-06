@@ -83,10 +83,11 @@ class catalogs():
        self.nsadict=dict((a,b) for a,b in zip(self.nsa.NSAID,np.arange(len(self.nsa.NSAID)))) #useful for us can easily look up galaxy ID's       
    def define_sample(self):
        #self.sampleflag = (self.wise.W3SNR>10) & (self.co.CO_DETECT==1)   
-       self.w3_flag = self.wise.W3SNR>10 #was >10
-       self.w4_flag = self.wise.W4SNR>5  #was >5    
+       self.w3_flag = (self.wise.W3SNR>4) & (self.wise.W3SNR < 5)  #was >10
+       self.w4_flag = self.wise.W4SNR>0  #was >5    
        self.co_flag = self.co.COdetected == '1'
        self.sampleflag = self.w3_flag & self.w4_flag & self.co_flag
+       self.sampleflag = self.w3_flag
        print 'number of galaxies in sample = ',sum(self.sampleflag)
 
        
@@ -105,7 +106,10 @@ class galaxy():
         self.band = band
         self.image_rootname = 'NSA-'+str(self.nsaid)+'-unwise-w'+str(self.band)
         self.image = self.image_rootname+'-img-m.fits'
-        self.mask_image = 'masks/'+self.image.split('.fits')[0]+'-mask.fits'
+
+
+        #self.mask_image = 'masks/'+self.image.split('.fits')[0]+'-mask.fits'
+        self.mask_image = 'NSA-'+str(self.nsaid)+'-unwise-mask.fits'
         self.sigma_image = self.image_rootname+'-std-m.fits'
         self.invvar_image = self.image_rootname+'-invvar-m.fits'
 
@@ -132,7 +136,7 @@ class galaxy():
 
         galindex = cats.nsadict[self.nsaid]
         baseurl = 'http://unwise.me/cutout_fits?version=allwise'
-        imsize = '100'
+        imsize = '50'
         imurl = baseurl +'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(cats.nsa.RA[galindex],cats.nsa.DEC[galindex],imsize,self.band)
         wisetar = wget.download(imurl)
         tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
@@ -220,6 +224,21 @@ class galaxy():
         self.re = 60*np.random.random()
         self.BA = np.random.random()
         self.PA =181*np.random.random()-89.0
+
+   def set_sersic_manual(self,n=2,m=7,re=5,BA=1,PA=0):
+        '''
+        GOAL: Set random parameters for galfit
+
+        INPUT: nsaid
+
+        OUTPUT: 5 random parameters for nsersic, magnitude, effective radius, axis ratio, and position angle
+
+        '''
+        self.nsersic = n
+        self.mag =m
+        self.re = re
+        self.BA = BA
+        self.PA = PA
                 
    def initialize_galfit(self,convflag=True):
         '''
@@ -295,8 +314,9 @@ class galaxy():
         s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu)
         output.write(s)
         output.close()
+    
 
-   def run_dmc(self):
+   def run_dmc(self, N=100,convflag=True):
       
       '''
       GOAL: Run galfit with monte carlo sampling to find all minima
@@ -306,7 +326,7 @@ class galaxy():
       OUTPUT: All possible minima
 
       '''
-      N = 100 # Number of random samples
+      #N = 100 # Number of random samples
       # set up arrays to store galfit output (e.g. xf, yf, rf, etc)
       X = np.empty((0,7))
       dX = np.empty((0,7))
@@ -314,7 +334,7 @@ class galaxy():
       self.get_wise_image()
       self.set_image_names()
       self.getpix()
-      self.initialize_galfit()
+      self.initialize_galfit(convflag=convflag)
       B = 1
       for i in range(N):
           E = 100000 
