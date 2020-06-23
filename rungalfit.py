@@ -74,13 +74,13 @@ class galfit:
         self.ncomp=ncomp
         self.asymmetry=0
 
-        print '***%%%%%%%%%%%%%%%%%'
-        print 'inside galfit class'
-        print xminfit,xmaxfit,yminfit,ymaxfit,convolution_size
-        print self.xminfit,self.xmaxfit,self.yminfit,self.ymaxfit,self.convolution_size
-        print 'psf_image = ',psf_image
-        print 'self.fitall = ',self.fitallflag
-        print '***%%%%%%%%%%%%%%%%%'
+        print('***%%%%%%%%%%%%%%%%%')
+        print('inside galfit class')
+        print(xminfit,xmaxfit,yminfit,ymaxfit,convolution_size)
+        print(self.xminfit,self.xmaxfit,self.yminfit,self.ymaxfit,self.convolution_size)
+        print('psf_image = ',psf_image)
+        print('self.fitall = ',self.fitallflag)
+        print('***%%%%%%%%%%%%%%%%%')
 
         
 
@@ -114,8 +114,8 @@ class galfit:
         #if self.constraintflag:
         #    self.galfit_input.write('G) /Users/rfinn/research/LocalClusters/GalfitAnalysis/sersic.constraint        # Parameter constraint file (ASCII)\n')
         self.galfit_input.write('H) '+str(int(round(self.xminfit)))+' '+str(int(round(self.xmaxfit)))+' '+str(int(round(self.yminfit)))+' '+str(int(round(self.ymaxfit)))+'     # Image region to fit (xmin xmax ymin ymax)\n')
-        #if self.convflag:
-        #    self.galfit_input.write('I) '+str(int(round(self.convolution_size)))+' '+str(int(round(self.convolution_size)))+'             # Size of convolution box (x y)\n')
+        if self.convflag:
+            self.galfit_input.write('I) '+str(int(round(self.convolution_size)))+' '+str(int(round(self.convolution_size)))+'             # Size of convolution box (x y)\n')
         self.galfit_input.write('J) %5.2f              # Magnitude photometric zeropoint \n'%(self.magzp))
         self.galfit_input.write('K) %6.5f   %6.5f         # Plate scale (dx dy)  [arcsec/pix]\n'%(self.pscale,self.pscale))
         self.galfit_input.write('O) regular                # Display type (regular, curses, both)\n')
@@ -181,9 +181,9 @@ class galfit:
         self.galfit_input.write(' 1) %8.1f  %8.1f %i %i  # position x, y        [pixel] \n'%(self.xobj,self.yobj,int(self.fitcenter),int(self.fitcenter)))
         self.galfit_input.write(' 3) %5.2f      %i       # total magnitude     \n'%(self.mag,self.fitmag))
         self.galfit_input.write(' 4) %8.2f       %i       #     R_e              [Pixels] \n'%(self.rad,self.fitrad))
-        print 'sersic n, fitsersicn = ',self.nsersic,self.fitn
+        print('sersic n, fitsersicn = ',self.nsersic,self.fitn)
         self.galfit_input.write(' 5) %5.2f       %i       # Sersic exponent (deVauc=4, expdisk=1)   \n'%(self.nsersic,int(self.fitn)))
-        print 'BA, fitBA = ',self.BA,self.fitBA
+        print('BA, fitBA = ',self.BA,self.fitBA)
         self.galfit_input.write(' 9) %5.2f       %i       # axis ratio (b/a)    \n'%(self.BA,int(self.fitBA)))
         self.galfit_input.write('10) %5.2f       %i       # position angle (PA)  [Degrees: Up=0, Left=90] \n'%(self.PA,int(self.fitPA)))
         if self.asymmetry:
@@ -204,7 +204,7 @@ class galfit:
         #print 'self.fitall = ',self.fitall
         self.create_output_names()
         self.open_galfit_input()
-        print 'in rungalfit.run_galfit, self.psf_image = ',self.psf_image
+        print('in rungalfit.run_galfit, self.psf_image = ',self.psf_image)
         self.write_image_params()
         #print 'self.fitall = ',self.fitall
         self.write_sersic(1,'sersic')
@@ -212,13 +212,13 @@ class galfit:
         self.write_sky(2)
         #print 'self.fitall = ',self.fitall
         if (self.fitallflag):
-            print '%%%%%%%%%%%%%% HEY %%%%%%%%%%%%%'
-            print 'I think fitall is true, just sayin...'
+            print('%%%%%%%%%%%%%% HEY %%%%%%%%%%%%%')
+            print('I think fitall is true, just sayin...')
             self.fitall()
         self.close_input_file()
         #print 'self.fitall = ',self.fitall
         s = 'galfit '+self.galfile
-        print 'run the following: ',s
+        print('run the following: ',s)
 
         #try:
         #    errno=os.system(s)
@@ -240,7 +240,7 @@ class galfit:
         try:
             os.rename('galfit.01',self.galfit_out)
         except:
-            print "appears like galfit did not complete"
+            print("appears like galfit did not complete")
             #galflag[j]=0
             self.galfit_flag=0
             return
@@ -248,11 +248,11 @@ class galfit:
             self.display_results()
 
     def display_results(self):
-        print '%%%%%%%%%%%%%%%%%%'
-        print 'inside display_results'
-        print 'self.galfit_flag = ',self.galfit_flag
+        print('%%%%%%%%%%%%%%%%%%')
+        print('inside display_results')
+        print('self.galfit_flag = ',self.galfit_flag)
         if (self.galfit_flag < 0.1):
-            print 'GALFIT did not complete - can not display results'
+            print('GALFIT did not complete - can not display results')
             return
 
         subcomp_image=self.galname+'-'+str(self.ncomp)+'Comp'+'-subcomps.fits'
@@ -289,7 +289,7 @@ class galfit:
         galfit_outimage=self.galname+'-'+'1Comp-galfit-out.fits[2]'
         galfit_outimage_header=self.galname+'-'+'1Comp-galfit-out.fits'
         self.print_galfit_results(galfit_outimage_header)
-        print 'file to display = ',subcomp_image
+        print('file to display = ',subcomp_image)
         s='file new multiframe '+subcomp_image
         d.set(s)
 
@@ -300,27 +300,27 @@ class galfit:
         if self.ncomp == 3:
             endframe=10
         s='frame delete '+str(endframe)
-        print s
+        print(s)
         try:
             d.set(s)
         except ValueError:
-            print "couldn't execute the following ds9 command : ",s
+            print("couldn't execute the following ds9 command : ",s)
         try:
             d.set('frame delete 5')
         except:
-            print "couldn't delete frame 5"
+            print("couldn't delete frame 5")
         try:
             d.set('frame delete 6')
         except:
-            print "couldn't delete frame 6"
+            print("couldn't delete frame 6")
         d.set('frame 7')
         if self.mask_image == None:
-            print 'no mask available'
+            print('no mask available')
         else:
             try:
                 d.set('file '+self.mask_image)
             except:
-                print "couldn't load mask file ",self.mask_image
+                print("couldn't load mask file ",self.mask_image)
 
         for k in range(2,endframe):
             if k == 5:
@@ -345,19 +345,19 @@ class galfit:
         # read in SE table to get x,y for sources
         #fname=self.galname+'test.fits'
         fname=self.galname+'test.cat'
-        print 'FITALL CATALOG NAME = ',fname
+        print('FITALL CATALOG NAME = ',fname)
         objnumber=2
         profile='sersic'
         try:
             se=atpy.Table(fname,type='ascii')
-            print 'found ',len(se.X_IMAGE),' sources on the field of ',self.galname
+            print('found ',len(se.X_IMAGE),' sources on the field of ',self.galname)
             nearbyobjflag=sqrt((se.X_IMAGE-self.xobj)**2+(se.Y_IMAGE-self.yobj)**2) > mindistance
             for k in range(len(se.X_IMAGE)):
                 if nearbyobjflag[k]:
                     objnumer=objnumber+1
                     self.add_simple_sersic_object(objnumber,profile,se.X_IMAGE[k],se.Y_IMAGE[k],se.MAG_BEST[k],se.FLUX_RADIUS[k,0],2,se.B_IMAGE[k]/se.A_IMAGE[k],se.THETA_IMAGE[k])
         except AttributeError:
-            print 'WARNING: no sources detected in image!'
+            print('WARNING: no sources detected in image!')
         raw_input=('hit any key to continue \n')
 
     def add_simple_sersic_object(self,objnumber,profile,x,y,mag,rad,nsersic,BA,PA):
@@ -377,7 +377,7 @@ class galfit:
         self.galfit_input.close()
 
     def print_params(self):
-        print 'CURRENT INPUTS: \n mag = %5.2f %i \n Re = %5.2f %i \n n = %5.2f %i\n B/A = %5.2f %i \n PA = %5.2f %i \n fitall = %i \n fitcenter = %i \n'%(self.mag,self.fitmag,self.rad,self.fitrad,self.nsersic,self.fitn,self.BA,self.fitBA,self.PA,self.fitPA,self.fitallflag,self.fitcenter)
+        print('CURRENT INPUTS: \n mag = %5.2f %i \n Re = %5.2f %i \n n = %5.2f %i\n B/A = %5.2f %i \n PA = %5.2f %i \n fitall = %i \n fitcenter = %i \n'%(self.mag,self.fitmag,self.rad,self.fitrad,self.nsersic,self.fitn,self.BA,self.fitBA,self.PA,self.fitPA,self.fitallflag,self.fitcenter))
                                 
     def print_galfit_results(self,image):            
         if self.asymmetry:
@@ -390,9 +390,9 @@ class galfit:
         t=parse_galfit_1comp(image)
         for i in range(len(header_keywords)):
             try:
-                print '%6s : %5.2f +/- %5.2f'%(header_keywords[i],t[i][0],t[i][1])
+                print('%6s : %5.2f +/- %5.2f'%(header_keywords[i],t[i][0],t[i][1]))
             except:
-                print '%6s : %5.2f'%(header_keywords[i],t[i])
+                print('%6s : %5.2f'%(header_keywords[i],t[i]))
     def edit_params_menu(self):
         flag=str(raw_input('What is wrong?\n n = adjust sersic \n r = reset Re \n o = nearby object (toggle fitall) \n b = B/A \n p = PA \n m = mag \n c = recenter \n f = hold values fixed \n a = toggle asymmetry parameter \n R = reset to original values \n g = go (run galfit) \n x=quit \n '))
         return flag
@@ -444,7 +444,7 @@ class galfit:
 
     def fix_BA(self):
         self.fitBA=toggle(self.fitBA)
-        print self.fitBA, self.BA
+        print(self.fitBA, self.BA)
     def fix_PA(self):
         self.fitPA=toggle(self.fitPA)
 

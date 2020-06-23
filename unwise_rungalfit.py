@@ -227,8 +227,6 @@ def process_list(listname,band,convolution_flag=True,getwise=True):
         if os.path.exists(altfilename):
             os.remove(altfilename)
         os.rename(galfile,altfilename)
-
-    
         # get output from no convolution - use mag and Re as input with convolution
 
         # skipping convolution for now

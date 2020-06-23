@@ -42,6 +42,7 @@ import os
 import numpy as np
 import argparse
 from astropy.io import fits
+from astropy.visualization import simple_norm
 import wget
 import tarfile
 import glob
@@ -61,7 +62,7 @@ parser.add_argument('--getwise',dest = 'getwise', default =False, help = 'downlo
 
 
 #os.sys.path.append('~/github/Virgo/programs/')
-os.sys.path.append('/Users/rfinn/github/virgowise/')
+os.sys.path.append('~/github/virgowise/')
 import rungalfit as rg #This code has all the defined functions that I can use
 
 
@@ -83,12 +84,12 @@ class catalogs():
        self.nsadict=dict((a,b) for a,b in zip(self.nsa.NSAID,np.arange(len(self.nsa.NSAID)))) #useful for us can easily look up galaxy ID's       
    def define_sample(self):
        #self.sampleflag = (self.wise.W3SNR>10) & (self.co.CO_DETECT==1)   
-       self.w3_flag = (self.wise.W3SNR>4) & (self.wise.W3SNR < 5)  #was >10
+       self.w3_flag = (self.wise.W3SNR>5) #& (self.wise.W3SNR < 5)  #was >10
        self.w4_flag = self.wise.W4SNR>0  #was >5    
-       self.co_flag = self.co.COdetected == '1'
+       self.co_flag = self.co.COdetected == b'1'
        self.sampleflag = self.w3_flag & self.w4_flag & self.co_flag
-       self.sampleflag = self.w3_flag
-       print 'number of galaxies in sample = ',sum(self.sampleflag)
+       #self.sampleflag = self.w3_flag
+       print('number of galaxies in sample = ',sum(self.sampleflag))
 
        
 class galaxy():
@@ -101,7 +102,7 @@ class galaxy():
         OUTPUT: fits files for images/error
 
         '''
-        print 'hello galaxy NSA ',nsaid
+        print('hello galaxy NSA ',nsaid)
         self.nsaid = nsaid
         self.band = band
         self.image_rootname = 'NSA-'+str(self.nsaid)+'-unwise-w'+str(self.band)
@@ -126,7 +127,7 @@ class galaxy():
 
    def get_wise_image(self):
         '''
-        GOAL: Get the unWISE image through the unWISE catalog
+        GOAL: Get the unWISE image from the unWISE catalog
 
         INPUT: nsaid used to grab unwise image information
 
@@ -141,7 +142,8 @@ class galaxy():
         wisetar = wget.download(imurl)
         tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
         wnames = tartemp.getnames()
-        print wnames
+        self.wnames = wnames
+        print(wnames)
         # check for multiple pointings - means galaxy is split between images
         self.multiframe = False
         if len(wnames) > 4:
@@ -164,8 +166,13 @@ class galaxy():
            if fname.find('img') > -1:
               self.inputimage = self.rename
         os.remove(wisetar)
-        print 'self.rename = ',self.rename
-    
+        print('self.rename = ',self.rename)
+
+        ##### DISPLAY IMAGE
+        im = fits.getdata(self.rename)
+        norm = simple_norm(im, stretch='asinh',percent=99)
+        plt.imshow(im, norm=norm)
+        plt.show()
    def set_image_names(self):
         '''
         GOAL: Set the image values for use later, psf image name
@@ -249,7 +256,7 @@ class galaxy():
         OUTPUT: A definition of everything from galname to convflag, necessary for running galfit
 
         '''
-        print 'self.psfimage = ',self.psf_image
+        print('self.psfimage = ',self.psf_image)
         
         self.gal1 = rg.galfit(galname=self.image_rootname,image=self.image, mask_image = self.mask_image, sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp,convflag=convflag)
         
@@ -317,64 +324,80 @@ class galaxy():
     
 
    def run_dmc(self, N=100,convflag=True):
-      
-      '''
-      GOAL: Run galfit with monte carlo sampling to find all minima
+        '''
+        GOAL: Run galfit with monte carlo sampling to find all minima
 
-      INPUT: nsaid
+        INPUT: nsaid
 
-      OUTPUT: All possible minima
+        OUTPUT: All possible minima
 
-      '''
-      #N = 100 # Number of random samples
-      # set up arrays to store galfit output (e.g. xf, yf, rf, etc)
-      X = np.empty((0,7))
-      dX = np.empty((0,7))
-      C = np.empty((0)) #create list C (charge) with one vector (not array)                
-      self.get_wise_image()
-      self.set_image_names()
-      self.getpix()
-      self.initialize_galfit(convflag=convflag)
-      B = 1
-      for i in range(N):
-          E = 100000 
-          while(np.random.random()>= np.exp(-B*E)): 
-             nX = len(X)
-             D = np.zeros((1,7))             
-             self.set_sersic_params() # select random initial conditions
-             X0 = np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])             
-             for k in range(nX-1):
-                 R = X0-X[k,:]
-                 R7 = np.linalg.norm(R)**7
-                 deltaD = C[k]*R/R7
-                 D = D+deltaD
-             E = np.linalg.norm(D)**2
-          self.run_galfit_wise(fitBA=1,fitPA=1)
-          self.get_galfit_results()
-          # append best-fit values and errors to array         
-          Qnew=np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])
-          dQnew = np.array([[self.xc_err,self.yc_err,self.mag_err,self.re_err,self.nsersic_err,self.BA_err,self.PA_err]])
+        '''
+        #N is Number of random samples
+        
+        # set up arrays to store galfit output (e.g. xf, yf, rf, etc)
+        # 7 output parameters, so Nx7 dimensional arrays
+        X = np.empty((0,7))
+        
+        # uncertainty in fitted parameters
+        dX = np.empty((0,7))
+        C = np.empty((0)) #create list C (charge) with one vector (not array)
 
-          flag=0    # the flag is 0 if it does not overlap the list of charges
-                         # the flag is 1 is it overlaps some other charge
-          for j in range(nX):
-              if (np.linalg.norm(Qnew-X[j,:])<= np.linalg.norm(dQnew+dX[j,:])):
-                  # overlaps
-                  flag=1
-                  C[j]=C[j]+1
-                  if np.linalg.norm(dQnew)<np.linalg.norm(dX[j,:]):
-                     X[j,:]=Qnew
-                     dX[j,:]=dQnew
-                  break
+        # download the wise images if the user requests this
+        if args.getwise:
+            self.get_wise_image()
 
-          if flag==0: # if it does not overlap, then add it to the list
-              if self.error==0:
-                  X=np.append(X,Qnew,axis=0)
-                  dX=np.append(dX,dQnew,axis=0)
-                  C = np.append(C,[1],axis=0)
-      #print np.mean(X,axis=0)    
-      #print np.std(X,axis=0)
-      return X    
+        # definie image names
+        self.set_image_names()
+
+        # get the pixel coordinates of the galaxy
+        # this uses the image header to translate RA and DEC into pixel coordinates
+        self.getpix()
+
+        # set up all of the inputs for galfit
+        self.initialize_galfit(convflag=convflag)
+        B = 1
+        for i in range(N):
+            E = 100000
+            # this loop selects initial conditions that 
+            while(np.random.random()>= np.exp(-B*E)): 
+                nX = len(X) # number of unique fits that we already found
+                D = np.zeros((1,7))             
+                self.set_sersic_params() # select random initial conditions
+                X0 = np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])             
+                for k in range(nX-1):
+                    R = X0-X[k,:]
+                    R7 = np.linalg.norm(R)**7
+                    deltaD = C[k]*R/R7
+                    D = D+deltaD
+                E = np.linalg.norm(D)**2
+            self.run_galfit_wise(fitBA=1,fitPA=1)
+            self.get_galfit_results()
+            # append best-fit values and errors to array         
+            Qnew=np.array([[self.xc,self.yc,self.mag,self.re,self.nsersic,self.BA,self.PA]])
+            dQnew = np.array([[self.xc_err,self.yc_err,self.mag_err,self.re_err,self.nsersic_err,self.BA_err,self.PA_err]])
+
+            # initialize flag
+            # the flag is 0 if it does not overlap the list of charges
+            # the flag is 1 is it overlaps some other charge
+            flag=0    
+                    
+            for j in range(nX): # loop over fitted variables (xc, yc, mag, re, nsersic, BA, PA)
+                #compare the difference in fitted parameter with error in difference
+                if (np.linalg.norm(Qnew-X[j,:])<= np.linalg.norm(dQnew+dX[j,:])): 
+                    # overlaps
+                    flag=1
+                    C[j]=C[j]+1 # adding a charge
+                    if np.linalg.norm(dQnew)<np.linalg.norm(dX[j,:]):
+                        X[j,:]=Qnew
+                        dX[j,:]=dQnew
+                    break
+
+            if flag==0: # if it does not overlap, then add it to the list
+                if self.error==0:
+                    X=np.append(X,Qnew,axis=0)
+                    dX=np.append(dX,dQnew,axis=0)
+                    C = np.append(C,[1],axis=0)
+        return X    
              
 
           
