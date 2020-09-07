@@ -2,6 +2,7 @@
 """
 GOAL:
 - to retrieve unWISE images of galaxies given their NSA id
+- run galfit
 
 PROCEDURE:
 - get list of NSAIDs
@@ -33,6 +34,16 @@ REQUIRED FILES:
 
 
 NOTES:
+* updating Aug 2020 to remove randomization of initial starting parameters
+* just want to take in an RA and DEC (with option to provide and fix the BA and PA)
+  - download WISE image
+  - run galfit on W3 (and W4?)
+  - return results
+
+
+* down the road, need to handle galaxies that have multiple unwise images
+  - combine the images
+  - make a cutout from the combined image
 """
 
 
@@ -43,6 +54,7 @@ import numpy as np
 import argparse
 from astropy.io import fits
 from astropy.visualization import simple_norm
+from astropy import units as u
 import wget
 import tarfile
 import glob
@@ -51,79 +63,61 @@ import gzip
 import astropy.wcs as wcs
 
 #Need user to define galaxy image/sigma/psf path later on
-parser = argparse.ArgumentParser(description ='Run galfit and store output with best fit parameters into a tar file')
-parser.add_argument('--band', dest = 'band', default = '3', help = 'unWISE image band to download: 3=12um, 4=22um (can only do one at a time for now.')
-parser.add_argument('--virgopath',dest = 'virgopath', default ='/Users/rfinn/github/Virgo/', help = 'Location of NSA tables fits')
-parser.add_argument('--nsapath',dest = 'nsapath', default ='/Users/rfinn/github/Virgo/tables/', help = 'Location of NSA tables fits')
-parser.add_argument('--nsafile',dest = 'nsafile', default ='virgo', help = 'nsa file to use.  could be nsa.virgo.fits (default) or use full to get nsa_v0_1_2.fits.  make sure nsapath points to the right place.')
-parser.add_argument('--display',dest = 'display', default =True, help = 'display galfit results in ds9?  default = True')
-parser.add_argument('--getwise',dest = 'getwise', default =False, help = 'download wise images?  default is False.')
 
+homedir = os.getenv("HOME")
 
-
-#os.sys.path.append('~/github/Virgo/programs/')
-os.sys.path.append('~/github/virgowise/')
+os.sys.path.append(homedir+'/github/virgowise/')
 import rungalfit as rg #This code has all the defined functions that I can use
+os.sys.path.append(homedir+'/github/HalphaImaging/python3/')
+import plot_cutouts_ha as cutouts #This code has all the defined functions that I can use
 
 
 
-class catalogs():
-   def __init__(self,catalog_path,virgoflag = False):
-       # read in nsa, wise, co catalogs
-       if virgoflag:
-            self.nsatab = catalog_path + 'nsa.virgo.fits'
-            self.wisetab = catalog_path + 'nsa_wise.virgo.fits'
-            self.cotab = catalog_path + 'nsa_CO-Gianluca.virgo.fits'
-            self.co = fits.getdata(self.cotab)
-       else:
-            self.nsatab = catalog_path + 'nsa_v0_1_2.fits'
-            self.wisetab = catalog_path + 'nsa_v0_1_2_wise.fits'
-       self.nsa = fits.getdata(self.nsatab)
-       self.wise = fits.getdata(self.wisetab)
-
-       self.nsadict=dict((a,b) for a,b in zip(self.nsa.NSAID,np.arange(len(self.nsa.NSAID)))) #useful for us can easily look up galaxy ID's       
-   def define_sample(self):
-       #self.sampleflag = (self.wise.W3SNR>10) & (self.co.CO_DETECT==1)   
-       self.w3_flag = (self.wise.W3SNR>5) #& (self.wise.W3SNR < 5)  #was >10
-       self.w4_flag = self.wise.W4SNR>0  #was >5    
-       self.co_flag = self.co.COdetected == b'1'
-       self.sampleflag = self.w3_flag & self.w4_flag & self.co_flag
-       #self.sampleflag = self.w3_flag
-       print('number of galaxies in sample = ',sum(self.sampleflag))
 
        
 class galaxy():
-   def __init__(self,nsaid,band='3'):
+   def __init__(self,ra,dec,size,name='galname',band='3'):
         '''
-        GOAL: Make 4 fits files, create a logfile and a header for it 
+        galaxy for wise analysis
 
-        INPUT: nsaids, band 
+        params:
+        -------
+        * ra = ra of gal center in deg
+        * dec = dec of gal center in deg
+        * size = D25/2, or some other estimate of radius in arcsec
 
-        OUTPUT: fits files for images/error
-
+        optional params:
+        ---------------
+        * name = name of galaxy to use when saving images, default is galname
+        * band = WISE band, default is '3'
+          - 1 = W1
+          - 2 = W2
+          - 3 = W3
+          - 4 = W4
+        
         '''
-        print('hello galaxy NSA ',nsaid)
-        self.nsaid = nsaid
+        self.ra = ra#*u.deg
+        self.dec = dec#*u.deg
+        self.radius = size#*u.arcsec
         self.band = band
-        self.image_rootname = 'NSA-'+str(self.nsaid)+'-unwise-w'+str(self.band)
+        self.galname = name
+        self.image_rootname = self.galname+'-unwise-w'+str(self.band)
         self.image = self.image_rootname+'-img-m.fits'
 
-
-        #self.mask_image = 'masks/'+self.image.split('.fits')[0]+'-mask.fits'
-        self.mask_image = 'NSA-'+str(self.nsaid)+'-unwise-mask.fits'
+        self.mask_image = self.galname+'-unwise-mask.fits'
         self.sigma_image = self.image_rootname+'-std-m.fits'
         self.invvar_image = self.image_rootname+'-invvar-m.fits'
 
-        # add code to remove the log file if it exists\
-        logfilename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-log.txt'
-        if os.path.exists(logfilename):
-           os.remove(logfilename)
+        # remove the log file if it exists
+        self.logfilename = self.galname+'-unwise-'+'w'+str(self.band)+'-log.txt'
+        if os.path.exists(self.logfilename):
+           os.remove(self.logfilename)
 
-        # add code to write the header line into the log file
-        output=open(logfilename,'w')
+        # write the header line into the log file
+        output=open(self.logfilename,'w')
         output.write('# xc xc_err yc yc_err mag mag_err re re_err nsersic nsrsic_err BA BA_err PA PA_err sky sky_err error chi2nu \n')
         # close log file
-        output.close
+        output.close()
 
    def get_wise_image(self):
         '''
@@ -135,10 +129,28 @@ class galaxy():
 
         '''
 
-        galindex = cats.nsadict[self.nsaid]
+
         baseurl = 'http://unwise.me/cutout_fits?version=allwise'
-        imsize = '50'
-        imurl = baseurl +'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(cats.nsa.RA[galindex],cats.nsa.DEC[galindex],imsize,self.band)
+        imsize = self.radius*2
+
+        imagenames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*2,bands=self.band,makeplots=False,subfolder=None)
+        
+
+        print(imagenames)
+   def get_wise_image_old(self):
+        '''
+        GOAL: Get the unWISE image from the unWISE catalog
+
+        INPUT: nsaid used to grab unwise image information
+
+        OUTPUT: Name of file to retrieve from
+
+        '''
+
+
+        baseurl = 'http://unwise.me/cutout_fits?version=allwise'
+        imsize = self.radius*2
+        imurl = baseurl +'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(self.ra,self.dec,imsize,self.band)
         wisetar = wget.download(imurl)
         tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
         wnames = tartemp.getnames()
@@ -155,7 +167,7 @@ class galaxy():
         tartemp.extractall()
         for fname in wnames:
            t = fname.split('-')
-           self.rename = 'NSA-'+str(self.nsaid)+'-'+t[0]+'-'+t[2]+'-'+t[3]+'-'+t[4]
+           self.rename = self.galname+'-'+t[0]+'-'+t[2]+'-'+t[3]+'-'+t[4]
 
            #print self.rename
            if os.path.exists(self.rename): # this should only occur if multiple images are returned from wise
@@ -202,20 +214,17 @@ class galaxy():
 
    def getpix(self):
         '''
-        GOAL: Get pixel values from nsa catalog RA/Dec Values
+        GOAL: Get pixel values that correspond to ra and dec
 
         INPUT: nsaid
         
         OUTPUT: xc, yc in pixels
 
         '''
-        galindex = cats.nsadict[self.nsaid]
-        self.RA = cats.nsa.RA[galindex]
-        self.DEC = cats.nsa.DEC[galindex]
+
         w=wcs.WCS(self.image)
-        #print self.RA, self.DEC
-        self.xc, self.yc = w.wcs_world2pix(self.RA, self.DEC,1)
-        #print self.xc, self.yc
+        self.xc, self.yc = w.wcs_world2pix(self.ra, self.dec,1)
+
 
    def set_sersic_params(self):
         '''
@@ -262,32 +271,43 @@ class galaxy():
         
    def run_galfit_wise(self,fitBA=1,fitPA=1):
         '''
-        GOAL: take values from NSA tables in /Virgo 
+        GOAL: 
+        * run galfit on one image
 
-        INPUT: nsaid, ba/pa = 1
+        optional params:
+        ----------------
+        * fitBA = set to 1 to let galfit fit the axis ratio BA of the galaxy
+        * fitPA = set to 1 to let galfit fit the PA position angle of the galaxy
 
         OUTPUT: several output files
 
         '''
-        os.system('cp '+args.virgopath+'wisepsf/'+self.psf_image+' .')
+        os.system('cp '+args.psfpath+'wisepsf/'+self.psf_image+' .')
         self.gal1.set_sersic_params(xobj=self.xc,yobj=self.yc,mag=self.mag,rad=self.re,nsersic=self.nsersic,BA=self.BA,PA=self.PA,fitmag=1,fitcenter=1,fitrad=1,fitBA=fitBA,fitPA=fitPA,fitn=1,first_time=0)
         self.gal1.set_sky(0)
         self.gal1.run_galfit()
-        #self.gal1.display_results()
-        #self.gal1.close_input_file()
-        #self.gal1.print_params()
-        #self.gal1.print_galfit_results()
    def get_galfit_results(self,printflag = False):
         '''
-        GOAL: Grab results from galfit (xc, yc, mag, re, nsersic, BA, PA, sky, error, chi2nu) and parse them into self.filename
+        GOAL: 
+        -----
+        * Grab results from galfit (xc, yc, mag, re, nsersic, BA, PA, sky, error, chi2nu) 
+          and parse them into self.filename
 
-        INPUT: nsaid
+        PARAMS:
+        -------
+        * none
 
-        OUTPUT: 1Comp file of output from galfit, header for the output file
+        OPTIONAL PARAMS:
+        ----------------
+        * printflag = print fit results, default is False
+
+        OUTPUT:
+        -------
+        * stores fit results in variables 
 
         '''
 
-        self.filename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
+        self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
         t = rg.parse_galfit_1comp(self.filename)
         if printflag:
             self.gal1.print_galfit_results(self.filename)
@@ -306,17 +326,19 @@ class galaxy():
         
    def write_results(self):
         '''
-        GOAL: Put results from galfit into a logfile by appending values
+        GOAL: 
+        * Put results from galfit into a logfile by appending values
 
-        INPUT: nsaid
+        PARAMS:
+        * none
 
-        OUTPUT: logfile of parameter types and their associated outputs from galfit 
+        OUTPUT: 
+        * logfile of parameter types and their associated outputs from galfit 
 
         '''
         self.get_galfit_results()
-        # Write a logfile 
-        logfilename = 'NSA-'+str(self.nsaid)+'-unwise-'+'w'+str(self.band)+'-log.txt'
-        output=open(logfilename,'a')
+
+        output=open(self.logfilename,'a')
         # create string with best-fit parameters
         s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu)
         output.write(s)
@@ -325,11 +347,15 @@ class galaxy():
 
    def run_dmc(self, N=100,convflag=True):
         '''
-        GOAL: Run galfit with monte carlo sampling to find all minima
+        GOAL: 
+        * Run galfit with monte carlo sampling to find all minima
 
-        INPUT: nsaid
+        OPTIONAL PARAMS:
+        * N = number of times to run galfit; default is 100
+        * convflag = convolve galfit model with psf; default is True
 
-        OUTPUT: All possible minima
+        OUTPUT: 
+        * galfit models for all possible minima
 
         '''
         #N is Number of random samples
@@ -346,7 +372,7 @@ class galaxy():
         if args.getwise:
             self.get_wise_image()
 
-        # definie image names
+        # define image names
         self.set_image_names()
 
         # get the pixel coordinates of the galaxy
@@ -398,32 +424,37 @@ class galaxy():
                     dX=np.append(dX,dQnew,axis=0)
                     C = np.append(C,[1],axis=0)
         return X    
-             
 
-          
-############ MAIN PROGRAM ###############
-if __name__ == "__main__":
+   def run_simple(self, convflag=True):
+        '''
+        GOAL: 
+        * Run galfit once 
+
+        OPTIONAL PARAMS:
+        * convflag = convolve galfit model with psf; default is True
+
+        OUTPUT: 
+        * galfit model
+
+        '''
+        # download the wise images if the user requests this
+        self.get_wise_image()
+
+        # define image names
+        self.set_image_names()
+
+        # get the pixel coordinates of the galaxy
+        # this uses the image header to translate RA and DEC into pixel coordinates
+        self.getpix()
+
+        # set up all of the inputs for galfit
+        self.initialize_galfit(convflag=convflag)
+        self.set_sersic_params() # select random initial conditions
+        self.run_galfit_wise(fitBA=1,fitPA=1)
+        self.write_results()
+
+
+
     
-    # READ IN CATALOGS
-    args = parser.parse_args()
-    if args.nsafile == 'virgo':
-        cats = catalogs(args.nsapath,virgoflag=True)
-    else:
-        cats = catalogs(args.nsapath,virgoflag=False)
-    if args.nsafile == 'virgo':
-        cats.define_sample()
-        listname = cats.nsa.NSAID[cats.sampleflag]
-
-    #lcs = fits.getdata('/Users/rfinn/research/LocalClusters/NSAmastertables/LCS_all_size.fits')
-    #ngc_filament_ids = [56403,56409,56410,56411,56434,56455,56456,56462,56469,56482,56489,61690,61691,61692,67593,88353,90371,93403,94217,104307,104439,118647,119230,119289,120018,120053,142509,143682,143686,143827,143951,143986,162674,163136,163783,164224,164358]    
-#119303 taking out bc bad image
-
-    #listname = ngc_filament_ids
-
-    # call the line below to get started
-    #process_list(listname,band=args.band)
-    
-    #galaxy_index = np.arange(len(self.nsa.RA))[mygals.sampleflag]
-    #mygals.get_wise_image(mygals.nsa.NSAID[galaxy_index[0]])
 
     
