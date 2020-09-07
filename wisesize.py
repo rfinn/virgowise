@@ -119,7 +119,7 @@ class galaxy():
         # close log file
         output.close()
 
-   def get_wise_image(self):
+   def get_wise_image(self,makeplots=False):
         '''
         GOAL: Get the unWISE image from the unWISE catalog
 
@@ -133,7 +133,7 @@ class galaxy():
         baseurl = 'http://unwise.me/cutout_fits?version=allwise'
         imsize = self.radius*2
 
-        imagenames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*2,bands=self.band,makeplots=False,subfolder=None)
+        imagenames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*2,bands=self.band,makeplots=makeplots,subfolder=None)
         
 
         print(imagenames)
@@ -187,14 +187,17 @@ class galaxy():
         plt.show()
    def set_image_names(self):
         '''
-        GOAL: Set the image values for use later, psf image name
+        GOAL:
+        * Set the psf image name and some additional parameters for galfit 
 
-        INPUT: nsaid as self
+        PARAMS:
+        * none
 
         OUTPUT: PSF image and optional diffusion kernel, other parameters  
 
         '''
-        self.psf_image = 'wise-w3-psf-wpro-09x09-05x05.fits' #just using center til, doesn't matter usually
+        #just using center til, doesn't matter usually
+        self.psf_image = homedir+'/github/virgowise/wise_psfs/wise-w3-psf-wpro-09x09-05x05.fits' 
         self.psf_oversampling = 8
         #mask_image = 'testimage_mask.fits' no mask image 
         self.xminfit=0
@@ -282,7 +285,7 @@ class galaxy():
         OUTPUT: several output files
 
         '''
-        os.system('cp '+args.psfpath+'wisepsf/'+self.psf_image+' .')
+        #os.system('cp '+self.psf_image+' .')
         self.gal1.set_sersic_params(xobj=self.xc,yobj=self.yc,mag=self.mag,rad=self.re,nsersic=self.nsersic,BA=self.BA,PA=self.PA,fitmag=1,fitcenter=1,fitrad=1,fitBA=fitBA,fitPA=fitPA,fitn=1,first_time=0)
         self.gal1.set_sky(0)
         self.gal1.run_galfit()
