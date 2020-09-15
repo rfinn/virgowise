@@ -8,8 +8,10 @@ pyds9
 
 
 '''
-
-import pyds9
+try:
+    import pyds9
+except ImportError:
+    print("WARNING: could not import pyds9")
 import os
 from astropy.io import fits
 

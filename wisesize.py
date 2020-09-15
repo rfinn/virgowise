@@ -1,36 +1,19 @@
 
 """
 GOAL:
-- to retrieve unWISE images of galaxies given their NSA id
+- to retrieve unWISE images of galaxies given their ra, dec, image size
 - run galfit
 
 PROCEDURE:
-- get list of NSAIDs
-- read in NSA
 - download unwise image for particular band as a tar file
-- extract the images from the tar file
-- rename the unwise images to something more user friendly
-- delete the tar file
+
 
 USEAGE:
 
 from within ipython on laptop
 
-%run ~/github/virgowise/using-rungalfit.py --virgo '/Users/rfinn/github/Virgo/' 
-
-For comparison with LCS galaxies
-
-%run ~/Dropbox/pythonCode/LCSanalyzeblue.py
-
-lcs_listname = s.s.NSAID[s.sampleflag]
-band = '3'
-
-%run /Users/rfinn/github/virgowise/unwise_rungalfit.py --nsapath '/Users/rfinn/research/NSA/' --nsafile 'full' --virgopath '/Users/rfinn/github/Virgo/'
-
-t = process_list(lcs_listname,'3',convolution_flag = False)
 
 REQUIRED FILES:
-- nsa fits catalog
 
 
 NOTES:
@@ -47,7 +30,6 @@ NOTES:
 """
 
 
-#Natasha goal for next week: TO SET UP A PARAMETER INPUT FILE AND TRY EVENTUALLY FOR GALFIT
 import os
 #import pyds9
 import numpy as np
@@ -61,8 +43,6 @@ import glob
 import gzip
 
 import astropy.wcs as wcs
-
-#Need user to define galaxy image/sigma/psf path later on
 
 homedir = os.getenv("HOME")
 
