@@ -76,13 +76,13 @@ class galfit:
         self.ncomp=ncomp
         self.asymmetry=0
 
-        print('***%%%%%%%%%%%%%%%%%')
-        print('inside galfit class')
-        print(xminfit,xmaxfit,yminfit,ymaxfit,convolution_size)
-        print(self.xminfit,self.xmaxfit,self.yminfit,self.ymaxfit,self.convolution_size)
-        print('psf_image = ',psf_image)
-        print('self.fitall = ',self.fitallflag)
-        print('***%%%%%%%%%%%%%%%%%')
+        #print('***%%%%%%%%%%%%%%%%%')
+        #print('inside galfit class')
+        #print(xminfit,xmaxfit,yminfit,ymaxfit,convolution_size)
+        #print(self.xminfit,self.xmaxfit,self.yminfit,self.ymaxfit,self.convolution_size)
+        #print('psf_image = ',psf_image)
+        #print('self.fitall = ',self.fitallflag)
+        #print('***%%%%%%%%%%%%%%%%%')
 
         
 
@@ -206,7 +206,7 @@ class galfit:
         #print 'self.fitall = ',self.fitall
         self.create_output_names()
         self.open_galfit_input()
-        print('in rungalfit.run_galfit, self.psf_image = ',self.psf_image)
+        #print('in rungalfit.run_galfit, self.psf_image = ',self.psf_image)
         self.write_image_params()
         #print 'self.fitall = ',self.fitall
         self.write_sersic(1,'sersic')

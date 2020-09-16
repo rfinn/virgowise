@@ -37,6 +37,8 @@ import argparse
 from astropy.io import fits
 from astropy.visualization import simple_norm
 from astropy import units as u
+from astropy.wcs import WCS
+from matplotlib import pyplot as plt
 import wget
 import tarfile
 import glob
@@ -113,10 +115,13 @@ class galaxy():
         baseurl = 'http://unwise.me/cutout_fits?version=allwise'
         imsize = self.radius*2
 
-        imagenames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*2,bands=self.band,makeplots=makeplots,subfolder=None)
+        imagenames,weightnames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*2,bands=self.band,makeplots=makeplots,subfolder=None)
         
-
-        print(imagenames)
+        self.image = imagenames[0]
+        
+        self.sigma_image = weightnames[0]
+        #print(self.sigma_image)
+        #print(imagenames)
    def get_wise_image_old(self):
         '''
         GOAL: Get the unWISE image from the unWISE catalog
@@ -307,7 +312,7 @@ class galaxy():
         self.error = t[8]
         self.chi2nu = t[9]
         
-   def write_results(self):
+   def write_results(self,printflag=False):
         '''
         GOAL: 
         * Put results from galfit into a logfile by appending values
@@ -319,15 +324,40 @@ class galaxy():
         * logfile of parameter types and their associated outputs from galfit 
 
         '''
-        self.get_galfit_results()
+        self.get_galfit_results(printflag=printflag)
 
         output=open(self.logfilename,'a')
         # create string with best-fit parameters
         s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu)
         output.write(s)
         output.close()
-    
+   def display_galfit_model(self):
+      # model name
+      self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
+      pngname = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.png'
+      image,h = fits.getdata(self.filename,1,header=True)
+      model = fits.getdata(self.filename,2)
+      residual = fits.getdata(self.filename,3)
 
+      wcs = WCS(h)
+      images = [image,model,residual]
+      titles = ['image','model','residual']
+      plt.figure(figsize=(14,6))
+      plt.subplots_adjust(wspace=.0)
+      for i,im in enumerate(images): 
+         plt.subplot(1,3,i+1,projection=wcs)
+         plt.imshow(im,origin='lower')
+         plt.xlabel('RA')
+         if i == 0:
+            plt.ylabel('DEC')
+         else:
+            ax = plt.gca()
+            ax.set_yticks([])
+         plt.title(titles[i],fontsize=16)
+      plt.savefig(pngname)
+   def print_galfit_results(self):
+      self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'      
+      rg.print_galfit_results(self.filename)
    def run_dmc(self, N=100,convflag=True):
         '''
         GOAL: 
@@ -432,10 +462,11 @@ class galaxy():
 
         # set up all of the inputs for galfit
         self.initialize_galfit(convflag=convflag)
-        self.set_sersic_params() # select random initial conditions
+        self.set_sersic_manual() # set fixed initial parameters
         self.run_galfit_wise(fitBA=1,fitPA=1)
-        self.write_results()
-
+        self.write_results(printflag=True)
+        #self.get_galfit_f
+        self.display_galfit_model()
 
 
     
