@@ -13,7 +13,7 @@ USEAGE:
 from within ipython on laptop
 
 
-REQUIRED FILES:
+REQUIRED FILES
 
 
 NOTES:
@@ -120,6 +120,13 @@ class galaxy():
         self.image = imagenames[0]
         
         self.sigma_image = weightnames[0]
+
+        # read in image and get image size
+
+        temp = fits.getdata(self.image)
+        print(temp.shape)
+        self.ximagesize,self.yimagesize = temp.shape
+        
         #print(self.sigma_image)
         #print(imagenames)
    def get_wise_image_old(self):
@@ -187,8 +194,8 @@ class galaxy():
         #mask_image = 'testimage_mask.fits' no mask image 
         self.xminfit=0
         self.yminfit=0
-        self.xmaxfit=100
-        self.ymaxfit=100
+        self.xmaxfit=self.ximagesize
+        self.ymaxfit=self.yimagesize
         self.convolution_size=50
 
         ### NEED TO UPDATE MAGZP AND PSCALE FOR UNWISE
