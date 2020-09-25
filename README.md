@@ -9,7 +9,7 @@
 
 ## Example
 
-You can find an example here: 
+You can find an example here: https://github.com/rfinn/virgowise/blob/master/notebooks/howto-run-wisesize.ipynb
 
 
 
