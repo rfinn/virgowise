@@ -1,19 +1,15 @@
 # virgowise
-code to analyze wise 12um images
 
-(0) get-unwise-images.py : Download unwise images (you can also do
-this in using-rungalfit.py)
+## Requirements
 
-from within ipython
-%run ~/github/virgowise/get-unwise-images.py --nsapath '/Users/rfinn/github/Virgo/tables/' --band 3
+* galfit: https://users.obs.carnegiescience.edu/peng/work/galfit/galfit.html
+* swarp: https://www.astromatic.net/software/swarp
+* HalphaImaging repository: https://github.com/rfinn/HalphaImaging
 
-(1) maskimage.py : create image masks using sextractor segmentation image
 
-(2) using-rungalfit.py : run galfit on images
+## Example
 
-(3) read_galfit_results.py : reads galfit output fits files, makes a few plots
-Still to do: to write code to extract fit parameters and store in a table
-
+You can find an example here: https://github.com/rfinn/virgowise/blob/master/notebooks/howto-run-wisesize.ipynb
 
 
 
