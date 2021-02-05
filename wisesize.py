@@ -353,6 +353,8 @@ class galaxy():
       # model name
       self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
       pngname = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.png'
+      if self.convflag:
+         pngname = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out-conv.png'
       image,h = fits.getdata(self.filename,1,header=True)
       model = fits.getdata(self.filename,2)
       residual = fits.getdata(self.filename,3)
@@ -514,6 +516,7 @@ class galaxy():
         * galfit model
 
         '''
+        self.convflag = convflag
         # download the wise images if the user requests this
         self.get_wise_image()
 
