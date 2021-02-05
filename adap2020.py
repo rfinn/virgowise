@@ -12,6 +12,7 @@ mycolors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 os.sys.path.append('/home/rfinn/github/LCS/python/Python3/')
 
 plotdir = homedir+'/proposals/NASA2020/figures/'
+plotdir = homedir+'/proposals/NSF2020/figures/'
 from LCScommon import *
 # using colors from matplotlib default color cycle
 mycolors = plt.rcParams['axes.prop_cycle'].by_key()['color']
@@ -127,7 +128,8 @@ class catalogs():
               ((self.a100nsa['Vhelio'] > zmin*3e5) & (self.a100nsa['Vhelio'] < zmax*3e5))) \
              & self.snr_flag 
         self.r50 = self.a100nsa['SERSIC_TH50']*self.nsaFlag + self.a100nsa['petroR50_r']*(~self.nsaFlag & self.a100Flag)
-        self.r90 = 1.3*(self.a100nsa['PETROTH90']*self.nsaFlag + self.a100nsa['petroR90_r']*(~self.nsaFlag & self.a100Flag))
+        self.r90 = 1.58*(self.a100nsa['PETROTH90']*self.nsaFlag + self.a100nsa['petroR90_r']*(~self.nsaFlag & self.a100Flag))
+        self.D90 = 2*self.r90
         print('parent sample (zcut) = ',sum(self.allbutsizeflag2))
         print('resolved sample (not AGN) = ',sum(self.sampleflag2 & (~self.agnflag2)))
         print('resolved sample (not AGN) = %.3f'%(sum(self.sampleflag2 & (~self.agnflag2))/sum(self.allbutsizeflag2)))
@@ -218,9 +220,9 @@ class catalogs():
             dmag = 0.15
             yl = .1*(xl-10)+1.15
             plt.plot(xl,yl,'r-')
-            plt.plot(xl,yl+dmag,'r--')
-            plt.plot(xl,yl-dmag,'r--')
-            plt.fill_between(xl,y1=yl+dmag,y2=yl-dmag,color='r',alpha=.08)
+            #plt.plot(xl,yl+dmag,'r--')
+            #plt.plot(xl,yl-dmag,'r--')
+            #plt.fill_between(xl,y1=yl+dmag,y2=yl-dmag,color='r',alpha=.08)
         #cb = plt.colorbar(fraction=.08,ax=allax)
         #cb.set_label('$N_{gal}$',fontsize=fsize)
         #plt.legend()
@@ -263,12 +265,12 @@ class catalogs():
 
         t = plt.hist(rad[flag1],bins=mybins,histtype='step',lw=2,label='A100+NSA')
         flag = self.sampleflag
-        t = plt.hist(rad[flag2],bins=mybins,histtype='step',lw=2,label='Resolved',hatch='//')
+        t = plt.hist(rad[flag2],bins=mybins,histtype='step',lw=2,label='GALFIT size',hatch='//')
         #plt.axvline(x=w3res,c='r',label='WISE 12um resolution',ls='--')
-        plt.axvline(x=sersicmin,c='k',label='$\ 2xWISE \ pixel$',ls='--')
+        plt.axvline(x=sersicmin,c='k',label='$W3 \ FWHM (6.5\'\')$',ls='--')
         plt.legend(fontsize=16)
         plt.xlim(-1,50)
-        plt.xlabel('Half-Light Radius (arcsec)',fontsize=16)
+        plt.xlabel('r-band Half-Light Radius (arcsec)',fontsize=16)
         plt.ylabel('Number of galaxies',fontsize=16)
         plt.title('(b) GALFIT modeling',fontsize=20)
         if plotsingle:
@@ -278,11 +280,14 @@ class catalogs():
         '''histogram of petro r90 with wise resolution'''
         if plotsingle:
             plt.figure()
-        w3res = 6.5 # arcsec
+        w3res = 6.5# arcsec
+        # for comparison, MIPS 24um resolution is 6"
         w4res = 12 # arcsec
         w3pixelscale = 2.75
         # plot histogram of SERSIC_TH90
-        mybins = np.linspace(0,50,50)
+        xmax=250
+        nbins=50
+        mybins = np.linspace(0,xmax,nbins)
         flag = self.allbutsizeflag
 
         if nsaflag:
@@ -294,17 +299,22 @@ class catalogs():
             flag1 = self.allbutsizeflag2
             flag2 = self.sampleflag2 & (self.r90 > 6)            
             cat = self.a100nsa
-            rad = self.r90
-        
+            rad = self.D90
+        np_size_cut = 10*w3res
         t = plt.hist(rad[flag1],bins=mybins,histtype='step',lw=2,label='A100+NSA')
-        t = plt.hist(rad[flag2],bins=mybins,histtype='step',lw=2,label='Resolved',hatch='//')        
+        t = plt.hist(rad[flag2],bins=mybins,histtype='step',lw=2,label='GALFIT Size',hatch='//')
+        flag = flag2 & (self.D90 > np_size_cut)
+        print('number in well-resolved sample = ',sum(flag))
+        print('number in GALFIT sample = ',sum(self.sampleflag2))        
+        t = plt.hist(rad[flag],bins=mybins,histtype='step',lw=2,label='Non-Param Size',hatch='\\\\')                
         #plt.axvline(x=w3res,c='r',label='WISE 12um resolution',ls='--')
         plt.axvline(x=w3res,c='k',label=r'$W3\ FWHM$',ls='--')
+        #plt.axvline(x=np_size_cut,c='k',label=r'Non-param size',ls=':')        
         plt.legend(fontsize=16)
-        plt.xlim(-1,50)
-        plt.xlabel('1.3xPetrosian R90 (arcsec)',fontsize=16)
+        plt.xlim(-1,xmax)
+        plt.xlabel('r-band diameter (3.16xPetro R90) (arcsec)',fontsize=16)
         plt.ylabel('Number of galaxies',fontsize=16)
-        plt.title('(c) Non-Param Photom',fontsize=20)
+        plt.title('(c) Non-Param Profiles',fontsize=20)
         if plotsingle:
             plt.savefig(plotdir+'/rpetro-size-hist.png')
             plt.savefig(plotdir+'/rpetro-size-hist.pdf')

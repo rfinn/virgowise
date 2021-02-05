@@ -15,7 +15,7 @@ except ImportError:
 import os
 from astropy.io import fits
 
-def parse_galfit_1comp(galfit_outimage,asymflag=0,ncomp=1):
+def parse_galfit_1comp(galfit_outimage,asymflag=0,ncomp=1,printflag=False):
     numerical_error_flag=0
     if asymflag:
         header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','1_F1','1_F1PA','CHI2NU']
@@ -49,8 +49,17 @@ def parse_galfit_1comp(galfit_outimage,asymflag=0,ncomp=1):
                 chi2nu=float(t[0])
                 continue
         fit_parameters.append(values)
+        if printflag:
+            print('{:6s}: {:s}'.format(hkey,s))
     fit_parameters.append(numerical_error_flag)
     fit_parameters.append(chi2nu)
+    #if printflag:
+    #    for i in range(len(header_keywords)):
+    #        try:
+    #            print('%6s : %5.2f +/- %5.2f'%(header_keywords[i],t[i][0],t[i][1]))
+    #        except TypeError:
+    #            print(header_keywords[i])
+
     return fit_parameters
 
 
@@ -89,6 +98,8 @@ class galfit:
     def create_output_names(self):
         if self.asymmetry:
             output_image=str(self.galname)+'-'+ str(self.ncomp) +'Comp-galfit-out-asym.fits'
+        elif self.convflag:
+            output_image=str(self.galname)+'-'+ str(self.ncomp) +'Comp-galfit-out-conv.fits'
         else:
             output_image=str(self.galname)+'-'+ str(self.ncomp) +'Comp-galfit-out.fits'
 
@@ -242,7 +253,7 @@ class galfit:
         try:
             os.rename('galfit.01',self.galfit_out)
         except:
-            print("appears like galfit did not complete")
+            print("I hate to be the bearer of bad news, but it appears like galfit did not complete.")
             #galflag[j]=0
             self.galfit_flag=0
             return
@@ -389,12 +400,7 @@ class galfit:
         if self.ncomp == 2:
             header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_SKY','ERROR','CHI2NU']
 
-        t=parse_galfit_1comp(image)
-        for i in range(len(header_keywords)):
-            try:
-                print('%6s : %5.2f +/- %5.2f'%(header_keywords[i],t[i][0],t[i][1]))
-            except:
-                print('%6s : %5.2f'%(header_keywords[i],t[i]))
+        t=parse_galfit_1comp(image,printflag=True)
     def edit_params_menu(self):
         flag=str(raw_input('What is wrong?\n n = adjust sersic \n r = reset Re \n o = nearby object (toggle fitall) \n b = B/A \n p = PA \n m = mag \n c = recenter \n f = hold values fixed \n a = toggle asymmetry parameter \n R = reset to original values \n g = go (run galfit) \n x=quit \n '))
         return flag

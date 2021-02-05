@@ -190,14 +190,15 @@ class galaxy():
 
         '''
         #just using center til, doesn't matter usually
-        self.psf_image = homedir+'/github/virgowise/wise_psfs/wise-w3-psf-wpro-09x09-05x05.fits' 
+        os.system('cp '+homedir+'/github/virgowise/wise_psfs/wise-w3-psf-wpro-09x09-05x05.fits .') 
+        self.psf_image = 'wise-w3-psf-wpro-09x09-05x05.fits' 
         self.psf_oversampling = 8
         #mask_image = 'testimage_mask.fits' no mask image 
         self.xminfit=0
         self.yminfit=0
         self.xmaxfit=self.ximagesize
         self.ymaxfit=self.yimagesize
-        self.convolution_size=50
+        self.convolution_size=self.ximagesize
 
         ### NEED TO UPDATE MAGZP AND PSCALE FOR UNWISE
         self.magzp=22.5 #For WISE
@@ -222,7 +223,7 @@ class galaxy():
         self.xc, self.yc = w.wcs_world2pix(self.ra, self.dec,1)
 
 
-   def set_sersic_params(self):
+   def set_sersic_params_random(self):
         '''
         GOAL: Set random parameters for galfit
 
@@ -303,7 +304,8 @@ class galaxy():
 
         '''
 
-        self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
+        self.filename = self.gal1.output_image
+        #self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
         t = rg.parse_galfit_1comp(self.filename)
         if printflag:
             self.gal1.print_galfit_results(self.filename)
@@ -417,7 +419,8 @@ class galaxy():
          plt.title(titles[i],fontsize=16)
       plt.savefig(pngname)
    def print_galfit_results(self):
-      self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'      
+      #self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
+      self.filename = self.gal1.output_image
       rg.print_galfit_results(self.filename)
    def run_dmc(self, N=100,convflag=True):
         '''
@@ -499,7 +502,7 @@ class galaxy():
                     C = np.append(C,[1],axis=0)
         return X    
 
-   def run_simple(self, convflag=True):
+   def run_simple(self, convflag=True,zoom=1,sersic_start=None):
         '''
         GOAL: 
         * Run galfit once 
@@ -523,11 +526,13 @@ class galaxy():
 
         # set up all of the inputs for galfit
         self.initialize_galfit(convflag=convflag)
-        self.set_sersic_manual() # set fixed initial parameters
+        if sersic_start is not None:
+           xc,yc,mag,re,n,BA,PA =  sersic_start
+           self.set_sersic_manual(m=mag,re=re,n=n,BA=BA,PA=PA) # set fixed initial parameters
         self.run_galfit_wise(fitBA=1,fitPA=1)
         self.write_results(printflag=True)
         #self.get_galfit_f
-        self.display_galfit_model()
+        self.display_galfit_model(zoom=zoom)
 
 
     
