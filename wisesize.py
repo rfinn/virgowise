@@ -24,8 +24,9 @@ NOTES:
   - return results
 
 
+DONE:
 * down the road, need to handle galaxies that have multiple unwise images
-  - combine the images
+  - combine the images - DONE
   - make a cutout from the combined image
 """
 
@@ -56,7 +57,9 @@ import plot_cutouts_ha as cutouts #This code has all the defined functions that 
 
 
 
-
+UNWISE_PIXSCALE = 2.75
+LEGACY_PIXSCALE = 1
+RSCALEFACTOR = 3
        
 class galaxy():
    def __init__(self,ra,dec,size,name='galname',band='3'):
@@ -114,9 +117,9 @@ class galaxy():
 
 
         baseurl = 'http://unwise.me/cutout_fits?version=allwise'
-        imsize = self.radius*2
 
-        imagenames,weightnames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*2,bands=self.band,makeplots=makeplots,subfolder=None)
+        # this function takes the wise image size in pixels
+        imagenames,weightnames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*RSCALEFACTOR/UNWISE_PIXELSCALE,bands=self.band,makeplots=makeplots,subfolder=None)
         
         self.image = imagenames[0]
         
@@ -130,6 +133,26 @@ class galaxy():
         
         #print(self.sigma_image)
         #print(imagenames)
+   def get_legacy_images(self,makeplots=False,band='r'):
+        '''
+        GOAL: Get the legacy jpeg image 
+
+        INPUT: nsaid used to grab unwise image information
+
+        OUTPUT: Name of file to retrieve from
+
+        '''
+
+
+        self.legacy_filename_r,self.legacy_jpegname = cutouts.get_legacy_images(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*RSCALEFACTOR,bands=band,subfolder=None)
+        
+
+        # read in image and get image size
+        
+        #print(self.sigma_image)
+        #print(imagenames)
+        
+
    def get_wise_image_old(self):
         '''
         GOAL: Get the unWISE image from the unWISE catalog
