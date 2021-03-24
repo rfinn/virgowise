@@ -119,7 +119,7 @@ class galaxy():
         baseurl = 'http://unwise.me/cutout_fits?version=allwise'
 
         # this function takes the wise image size in pixels
-        imagenames,weightnames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*RSCALEFACTOR/UNWISE_PIXELSCALE,bands=self.band,makeplots=makeplots,subfolder=None)
+        imagenames,weightnames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*RSCALEFACTOR/UNWISE_PIXSCALE,bands=self.band,makeplots=makeplots,subfolder=None)
         
         self.image = imagenames[0]
         
@@ -554,7 +554,11 @@ class galaxy():
         self.initialize_galfit(convflag=convflag)
         if sersic_start is not None:
            xc,yc,mag,re,n,BA,PA =  sersic_start
-           self.set_sersic_manual(m=mag,re=re,n=n,BA=BA,PA=PA) # set fixed initial parameters
+           self.set_sersic_manual(m=mag,re=re,n=n,BA=BA,PA=PA)
+           # set fixed initial parameters
+        else:
+           self.set_sersic_manual()
+      
         self.run_galfit_wise(fitBA=1,fitPA=1)
         self.write_results(printflag=True)
         #self.get_galfit_f
