@@ -72,24 +72,33 @@ class catalogs():
         #self.agnflag = self.AGNKEWLEY
     def calcagn2(self):
         self.AGNKAUFF2 = np.zeros(len(self.a100nsa),'bool')
+        # this is true if the object in an AGN
         t= ((np.log10(self.a100nsa['O3FLUX']/self.a100nsa['HBFLUX']) > (.61/(np.log10(self.a100nsa['N2FLUX']/self.a100nsa['HAFLUX'])-.05)+1.3)) | (np.log10(self.a100nsa['N2FLUX']/self.a100nsa['HAFLUX']) > 0.))
-        self.AGNKAUFF2[~t.mask] = t[~t.mask].data
+        # in 2022, getting error about mask,
+        # AttributeError: 'numpy.ndarray' object has no attribute 'mask'
+        
+        self.AGNKAUFF2 = t
+        #self.AGNKAUFF2[~t.mask] = t[~t.mask].data
         self.t2 = t
 
         #y=(.61/(x-.47)+1.19)
         self.AGNKEWLEY2 = np.zeros(len(self.a100nsa),'bool')
         t= ((np.log10(self.a100nsa['O3FLUX']/self.a100nsa['HBFLUX']) > (.61/(np.log10(self.a100nsa['N2FLUX']/self.a100nsa['HAFLUX'])-.47)+1.19)) | (np.log10(self.a100nsa['N2FLUX']/self.a100nsa['HAFLUX']) > 0.3))
         self.t1 = t
-        self.AGNKEWLEY2[~t.mask] = t[~t.mask].data
+        # in 2022, getting error about mask
+        #self.AGNKEWLEY2[~t.mask] = t[~t.mask].data
+        self.AGNKEWLEY2 = t        
         #self.agnflag2 = self.AGNKAUFF2
         self.agnflag2 = np.zeros(len(self.a100nsa),'bool')
-        self.agnflag2[~self.t1.mask] = self.t1[~self.t1.mask].data
+        #self.agnflag2[~self.t1.mask] = self.t1[~self.t1.mask].data
+        self.agnflag2 = self.t1
         
         # W1 - W2 > 0.8
         self.wiseagn = np.zeros(len(self.a100nsa),'bool')
         t = ((self.a100nsa['W1MPRO'] - self.a100nsa['W2MPRO']) > 0.8 )| \
             ((self.a100nsa['w1_mag'] - self.a100nsa['w2_mag']) > 0.8)
-        self.wiseagn[~t.mask] = t[~t.mask].data
+        
+        self.wiseagn = t
         self.agn = self.agnflag2 | self.wiseagn
     def define_sample(self):
         self.w3_flag = self.wise.W3SNR>10 
